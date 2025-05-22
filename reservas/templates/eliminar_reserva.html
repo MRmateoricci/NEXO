@@ -1,0 +1,72 @@
+<h1 style="text-align: center;">Eliminar Solicitud de reserva</h1>
+
+<style>
+.form-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+}
+.form-field {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 1em;
+    max-width: 400px;
+}
+.form-field label {
+    margin-bottom: 0.3em;
+    font-weight: bold;
+}
+.form-field input[type="checkbox"] {
+    margin-right: 0.5em;
+}
+ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1em 0;
+    width: 100%;
+}
+li {
+    margin-bottom: 0.5em;
+    font-size: 1.2em;
+}
+button {
+    font-size: 1.1em;
+    padding: 0.5em 1em;
+}
+body, label, input, .form-field, .form-container {
+    font-size: 1.1em;
+}
+
+h1 {
+    font-size: 2em;
+    margin-bottom: 1em;
+}
+</style>
+
+<div class="form-container">
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-field">
+            <label>Selecciona las reservas a eliminar:</label>
+            <ul>
+                {% for reserva in reservas %}
+                    <li>
+                        <input type="checkbox" name="reservas" value="{{ reserva.id }}">
+                        {{ reserva.fecha_inicio }} - {{ reserva.fecha_fin }} ({{ reserva.inmueble }})
+                    </li>
+                {% empty %}
+                    <li>No tienes reservas.</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <button type="submit">Eliminar seleccionadas</button>
+        {% if mensaje %}
+            <ul class="errorlist" style="color: red;">
+                <li>{{ mensaje }}</li>
+            </ul>
+        {% endif %}
+    </form>
+</div>

@@ -15,5 +15,5 @@ urlpatterns = [
     #path('reservas/editar/<int:pk>/', EditarReservaView.as_view(), name='editar_reserva'),
     
     # URL para la vista de eliminar reserva
-    #path('reservas/eliminar/<int:pk>/', EliminarReservaView.as_view(), name='eliminar_reserva'),
+    path('eliminar/', views.EliminarReservaView, name='eliminar_reserva'),
 ]

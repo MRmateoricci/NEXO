@@ -14,10 +14,8 @@ class crearReservaForm(forms.Form):
         error_messages={'required': 'Este campo es obligatorio', 'invalid': 'Formato de fecha inválido. Usa el formato YYYY-MM-DD.'
         }
     )
-    
-    descripcion = forms.CharField(widget=forms.Textarea, label='Descripción', required=False)
 
-def clean(self):
+    def clean(self):
         cleaned_data = super().clean()
         fecha_inicio = cleaned_data.get('fecha_inicio')
         fecha_fin = cleaned_data.get('fecha_fin')
