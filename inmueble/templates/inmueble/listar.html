@@ -1,0 +1,20 @@
+<h1>Inmuebles</h1>
+{% if inmuebles %}
+    <ul>
+        {% for inmueble in inmuebles %}
+        <li>
+            <strong>Nombre:</strong> {{ inmueble.Nombre}}<br>
+            <strong>Descripción:</strong> {{ inmueble.descripcion }}<br>
+            <strong>Tipo:</strong> {{ inmueble.tipo }}<br>
+            <strong>Metros cuadrados:</strong> {{ inmueble.metros_cuadrados }}<br>
+            <strong>Huéspedes:</strong> {{ inmueble.cantidad_huespedes }}<br>
+            <strong>Dirección:</strong> {{ inmueble.calle }} {{ inmueble.numero }}, {{ inmueble.ciudad }}, {{ inmueble.provincia }}, {{ inmueble.pais }}<br>
+            <strong>Estado:</strong> {{ inmueble.estado }}<br>
+            <strong>Precio por día:</strong> ${{ inmueble.precio_diario }}
+            <hr>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else%}
+        <h3> Aun no hay inmuebles cargados.</h3>
+{% endif %}
