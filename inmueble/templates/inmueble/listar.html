@@ -12,7 +12,7 @@
         inmueble.provincia }}, {{ inmueble.pais }}<br>
         <strong>Estado:</strong> {{ inmueble.estado }}<br>
         <strong>Precio por día:</strong> ${{ inmueble.precio_diario }}
-        <a href="{% url 'ver_disponibilidad' inmueble.id %}" class="btn btn-primary">Ver disponibilidad</a>
+        <a href="{% url 'ver_disponibilidad' inmueble_id=inmueble.id %}" class="btn btn-primary">Ver disponibilidad</a>
         <hr>
     </li>
     {% endfor %}
