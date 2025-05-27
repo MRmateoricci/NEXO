@@ -1,15 +1,14 @@
 <h1>Lista de Inmuebles</h1>
+{% load custom_filters %}
 
-{% if inmuebles %}
 <form method="get">
     <!-- Filtro de Tipo -->
     <label for="tipo">Tipo:</label>
     <select name="tipo" id="tipo">
         <option value="">Todos</option>
-        <option value="Casa" {% if tipo=="Casa" %}selected{% endif %}>Casa</option>
-        <option value="Local" {% if tipo=="Local" %}selected{% endif %}>Local</option>
-        <option value="Cochera" {% if tipo=="Cochera" %}selected{% endif %}>Cochera</option>
-        <option value="Departamento" {% if tipo=="Departamento" %}selected{% endif %}>Departamento</option>
+        {% for value, label in tipo_choices %}
+        <option value="{{ value }}" {% if tipo|equals:value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
     </select>
 
     <!-- Filtro de Huéspedes -->
@@ -18,25 +17,26 @@
 
     <!-- Filtro de Metros -->
     <label for="metros">Metros cuadrados mínimos:</label>
-    <input type="number" name="metros" id="metros" min="1" value="{{ metros|default:'' }}">
+    <input type="number" name="metros" id="metros" min="1" step="0.01" value="{{ metros|default:'' }}">
 
     <button type="submit">Filtrar</button>
-    <a href="?" class="btn btn-secondary">Limpiar filtros</a>
+    <a href="{% url 'listar_inmuebles' %}" class="btn btn-secondary">Limpiar filtros</a>
 </form>
 
 <hr>
 
+{% if page_obj %}
 <ul>
-    {% for inmueble in inmuebles %}
+    {% for inmueble in page_obj %}
     <li>
-        <strong>Nombre:</strong> {{ inmueble.Nombre}}<br>
+        <strong>Título:</strong> {{ inmueble.titulo }}<br>
         <strong>Descripción:</strong> {{ inmueble.descripcion }}<br>
-        <strong>Tipo:</strong> {{ inmueble.tipo }}<br>
+        <strong>Tipo:</strong> {{ inmueble.get_tipo_display }}<br>
         <strong>Metros cuadrados:</strong> {{ inmueble.metros_cuadrados }}<br>
         <strong>Huéspedes:</strong> {{ inmueble.cantidad_huespedes }}<br>
         <strong>Dirección:</strong> {{ inmueble.calle }} {{ inmueble.numero }}, {{ inmueble.ciudad }}, {{
         inmueble.provincia }}, {{ inmueble.pais }}<br>
-        <strong>Estado:</strong> {{ inmueble.estado }}<br>
+        <strong>Estado:</strong> {{ inmueble.get_estado_display }}<br>
         <strong>Precio por día:</strong> ${{ inmueble.precio_diario }}
         <a href="{% url 'ver_disponibilidad' inmueble_id=inmueble.id %}" class="btn btn-primary">Fechas Disponibles</a>
         <hr>
@@ -44,7 +44,23 @@
     {% endfor %}
 </ul>
 
-{% else%}
+<!-- Paginación -->
+<div class="pagination">
+    <span>
+        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+    </span>
 
-<h3> Aun no hay inmuebles cargados.</h3>
+    {% if page_obj.has_previous %}
+    <a
+        href="?{% if tipo %}tipo={{ tipo }}&{% endif %}{% if huespedes %}huespedes={{ huespedes }}&{% endif %}{% if metros %}metros={{ metros }}&{% endif %}page={{ page_obj.previous_page_number }}">Anterior</a>
+    {% endif %}
+
+    {% if page_obj.has_next %}
+    <a
+        href="?{% if tipo %}tipo={{ tipo }}&{% endif %}{% if huespedes %}huespedes={{ huespedes }}&{% endif %}{% if metros %}metros={{ metros }}&{% endif %}page={{ page_obj.next_page_number }}">Siguiente</a>
+    {% endif %}
+</div>
+
+{% else %}
+<h3>Aún no hay inmuebles cargados.</h3>
 {% endif %}

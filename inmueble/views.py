@@ -1,38 +1,47 @@
 from django.shortcuts import render
 from .models import Inmueble
-
-#def listar_inmuebles(request):
-   # inmuebles = Inmueble.objects.all()
-    #return render(request, 'inmueble/listar.html', {'inmuebles' : inmuebles})
+from django.db.models import Q
+from django.core.paginator import Paginator
 
 def listar_inmuebles(request):
-    inmuebles = Inmueble.objects.all()
+    # Parámetros GET (con valores por defecto y sanitización)
+    tipo = request.GET.get('tipo', '').strip()
+    huespedes = request.GET.get('huespedes', '').strip()
+    metros = request.GET.get('metros', '').strip()
 
-    tipo = request.GET.get('tipo')
-    huespedes = request.GET.get('huespedes')
-    metros = request.GET.get('metros')
-
+    # Filtrado
+    filters = Q()
     if tipo:
-        inmuebles = inmuebles.filter(tipo=tipo)
-
+        filters &= Q(tipo__iexact=tipo)
     if huespedes:
         try:
-            inmuebles = inmuebles.filter(cantidad_huespedes__gte=int(huespedes))
+            filters &= Q(cantidad_huespedes__gte=int(huespedes))
         except ValueError:
-            pass  # Si no es un número válido, ignora el filtro
-
+            pass
     if metros:
         try:
-            inmuebles = inmuebles.filter(metros_cuadrados__gte=int(metros))
+            filters &= Q(metros_cuadrados__gte=float(metros))
         except ValueError:
             pass
 
+    inmuebles = Inmueble.objects.filter(filters)
+    
+    # Paginación
+    paginator = Paginator(inmuebles, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Choices para el template
+    tipo_choices = Inmueble._meta.get_field('tipo').choices or []
+
     return render(request, 'inmueble/listar.html', {
-        'inmuebles': inmuebles,
+        'page_obj': page_obj,
         'tipo': tipo,
         'huespedes': huespedes,
-        'metros': metros
+        'metros': metros,
+        'tipo_choices': tipo_choices,
     })
+
 
    
 
