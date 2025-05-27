@@ -1,9 +1,40 @@
 from django.shortcuts import render
 from .models import Inmueble
 
+#def listar_inmuebles(request):
+   # inmuebles = Inmueble.objects.all()
+    #return render(request, 'inmueble/listar.html', {'inmuebles' : inmuebles})
+
 def listar_inmuebles(request):
     inmuebles = Inmueble.objects.all()
-    return render(request, 'inmueble/listar.html', {'inmuebles' : inmuebles})
+
+    tipo = request.GET.get('tipo')
+    huespedes = request.GET.get('huespedes')
+    metros = request.GET.get('metros')
+
+    if tipo:
+        inmuebles = inmuebles.filter(tipo=tipo)
+
+    if huespedes:
+        try:
+            inmuebles = inmuebles.filter(cantidad_huespedes__gte=int(huespedes))
+        except ValueError:
+            pass  # Si no es un número válido, ignora el filtro
+
+    if metros:
+        try:
+            inmuebles = inmuebles.filter(metros_cuadrados__gte=int(metros))
+        except ValueError:
+            pass
+
+    return render(request, 'inmueble/listar.html', {
+        'inmuebles': inmuebles,
+        'tipo': tipo,
+        'huespedes': huespedes,
+        'metros': metros
+    })
+
+   
 
 #HU ver disponibilidad de inmueble
 from django.shortcuts import render, get_object_or_404

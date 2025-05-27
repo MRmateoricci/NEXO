@@ -1,5 +1,31 @@
-<h1>Inmuebles</h1>
+<h1>Lista de Inmuebles</h1>
+
 {% if inmuebles %}
+<form method="get">
+    <!-- Filtro de Tipo -->
+    <label for="tipo">Tipo:</label>
+    <select name="tipo" id="tipo">
+        <option value="">Todos</option>
+        <option value="Casa" {% if tipo=="Casa" %}selected{% endif %}>Casa</option>
+        <option value="Local" {% if tipo=="Local" %}selected{% endif %}>Local</option>
+        <option value="Cochera" {% if tipo=="Cochera" %}selected{% endif %}>Cochera</option>
+        <option value="Departamento" {% if tipo=="Departamento" %}selected{% endif %}>Departamento</option>
+    </select>
+
+    <!-- Filtro de Huéspedes -->
+    <label for="huespedes">Cantidad mínima de huéspedes:</label>
+    <input type="number" name="huespedes" id="huespedes" min="1" value="{{ huespedes|default:'' }}">
+
+    <!-- Filtro de Metros -->
+    <label for="metros">Metros cuadrados mínimos:</label>
+    <input type="number" name="metros" id="metros" min="1" value="{{ metros|default:'' }}">
+
+    <button type="submit">Filtrar</button>
+    <a href="?" class="btn btn-secondary">Limpiar filtros</a>
+</form>
+
+<hr>
+
 <ul>
     {% for inmueble in inmuebles %}
     <li>
@@ -12,11 +38,13 @@
         inmueble.provincia }}, {{ inmueble.pais }}<br>
         <strong>Estado:</strong> {{ inmueble.estado }}<br>
         <strong>Precio por día:</strong> ${{ inmueble.precio_diario }}
-        <a href="{% url 'ver_disponibilidad' inmueble_id=inmueble.id %}" class="btn btn-primary">Ver disponibilidad</a>
+        <a href="{% url 'ver_disponibilidad' inmueble_id=inmueble.id %}" class="btn btn-primary">Fechas Disponibles</a>
         <hr>
     </li>
     {% endfor %}
 </ul>
+
 {% else%}
+
 <h3> Aun no hay inmuebles cargados.</h3>
 {% endif %}
