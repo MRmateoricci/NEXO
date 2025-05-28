@@ -20,16 +20,16 @@
         </div>
         {% endif %}
 
-    <nav style="background-color: #282929; color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center;">
+    <nav style="background-color: #282929; position: fixed; color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; width: 100%; z-index: 1000;">
         <div class="logo" style="display: flex; align-items: center;">
-            <img src="{% static 'img/logo.png' %}" alt="Logo" style="height: 80px; width: auto;">
+            <img src="{% static 'img/logo.png' %}" alt="Logo" style="height: 60px; width: auto;">
             <a href="{% url 'home' %}" style="color: #ff571b; font-weight: bold; text-decoration: none;">Alquiler Express</a>
         </div>
         <div class="nav-links">
             {% if user.is_authenticated %}
                 <span style="margin-right: 1rem;">Hola, {{ user.first_name }}!</span>
                 <a href="{% url 'editar_usuario' %}" style="color: white; text-decoration: none; margin-left: 1rem;">Editar Perfil</a>
-                <a href="{% url 'logout' %}" style="color: white; text-decoration: none; margin-left: 1rem;">Cerrar sesión</a>
+                <a href="{% url 'logout' %}" style="color: white; text-decoration: none; margin-left: 1rem; margin-right: 2rem;">Cerrar sesión</a>
             {% else %}
                 <a href="{% url 'login' %}" style="color: white; text-decoration: none; margin-left: 1rem;">Iniciar sesión</a>
                 <a href="{% url 'registro' %}" style="color: white; text-decoration: none; margin-left: 1rem;">Registrarse</a>
@@ -40,18 +40,18 @@
     <div style="display:flex;">
 
         <!-- SIDE NAV -->
-        <div style="width:200px; background-color:#2156bf; padding:1rem; height:100vh;">
+        <div style="width:150px; background-color:#2156bf; padding:1rem; height:100vh; position: fixed; z-index: 500; margin-top: 5rem; ">
             <p style="font-weight:bold;">Menú</p>
-            <a href="{% url 'home' %}" style="display:block; margin:0.5rem 0;">Inicio</a>
+            <a href="{% url 'home' %}" style="display:block; color: #FFA500; margin:0.5rem 0;">Inicio</a>
             {% if user.is_authenticated %}
                 {% if user.rol == 'admin' or user.rol == 'empleado' %}
-                    <a href="{% url 'lista_usuarios' %}" style="display:block; margin:0.5rem 0;">Ver usuarios</a>
+                    <a href="{% url 'lista_usuarios' %}" style="display:block; color: #FFA500; margin:0.5rem 0;">Ver usuarios</a>
                 {% endif %}
             {% endif %}
-            <a href="{% url 'listar_inmuebles' %}" style="display:block; margin:0.5rem 0;">Inmuebles</a>
+            <a href="{% url 'listar_inmuebles' %}" style="display:block; color: #FFA500; margin:0.5rem 0;">Inmuebles</a>
         </div>
 
-        <div class="content" style="padding: 2rem;">
+        <div class="content" style="padding: 2rem; margin-left: 200px;">
             {% block content %}
             {% endblock %}
         </div>
