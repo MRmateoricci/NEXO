@@ -2,6 +2,9 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, views as auth_views
 from django.contrib import messages
 from .forms import RegistroForm, LoginForm, EditarUsuarioForm
+from .models import Usuario
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404
 
 def registro(request):
     if request.method == 'POST':
@@ -21,6 +24,8 @@ def registro(request):
     return render(request, 'usuarios/registro.html', {'form': form})
 
 def login_view(request):
+    if request.user.is_authenticated:
+        return redirect('home')  # Redirigir si ya está autenticado
     if request.method == 'POST':
         form = LoginForm(request, data=request.POST)
         if form.is_valid():
@@ -73,3 +78,30 @@ class PasswordResetConfirm(auth_views.PasswordResetConfirmView):
 # View confirmación cambio hecho
 class PasswordResetComplete(auth_views.PasswordResetCompleteView):
     template_name = 'usuarios/password_reset_complete.html'
+
+@login_required
+def listar_usuarios(request):
+    if request.user.rol not in ['admin', 'empleado']:
+        return redirect('home')
+    usuarios = Usuario.objects.all()
+    return render(request, 'usuarios/listar_usuarios.html', {'usuarios': usuarios})
+
+@login_required
+def deshabilitar_usuario(request, usuario_id):
+    if request.user.rol not in  ['admin', 'empleado']:
+        return redirect('home')
+    usuario = get_object_or_404(Usuario, id=usuario_id)
+    usuario.is_active = False
+    usuario.save()
+    messages.success(request, f'Usuario {usuario.email} deshabilitado correctamente.')
+    return redirect('lista_usuarios')
+
+@login_required
+def habilitar_usuario(request, usuario_id):
+    if request.user.rol not in ['admin', 'empleado']:
+        return redirect('home')
+    usuario = get_object_or_404(Usuario, id=usuario_id)
+    usuario.is_active = True
+    usuario.save()
+    messages.success(request, f'Usuario {usuario.email} habilitado correctamente.')
+    return redirect('lista_usuarios')
