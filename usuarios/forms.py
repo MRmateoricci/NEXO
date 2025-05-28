@@ -1,38 +1,36 @@
 from django import forms
 from .models import Usuario
 from django.contrib.auth import authenticate
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
-class RegistroForm(forms.ModelForm):
-    contraseña = forms.CharField(label='Contraseña', widget=forms.PasswordInput)
-    confirmar_contraseña = forms.CharField(label='Confirmar contraseña', widget=forms.PasswordInput)
-
+class RegistroForm(UserCreationForm):
     class Meta:
         model = Usuario
-        fields = ['nombre', 'apellido', 'dni', 'email', 'contraseña', 'confirmar_contraseña', 'rol']
-
-    def clean(self):
-        cleaned_data = super().clean()
-        password = cleaned_data.get("contraseña")
-        confirm = cleaned_data.get("confirmar_contraseña")
-
-        if password != confirm:
-            raise forms.ValidationError("Las contraseñas no coinciden.")
-        return cleaned_data
+        fields = ('username', 'email', 'first_name', 'last_name', 'dni', 'rol', 'password1', 'password2')
+        widgets = {
+            'password1': forms.PasswordInput(),
+            'password2': forms.PasswordInput(),
+        }
     
-class LoginForm(forms.Form):
-    email = forms.EmailField(label='Email')
-    contraseña = forms.CharField(label='Contraseña', widget=forms.PasswordInput)
+class LoginForm(AuthenticationForm):
+    username = forms.CharField(label='Usuario o Email')
 
-    def clean(self):
-        cleaned_data = super().clean()
-        email = cleaned_data.get('email')
-        contraseña = cleaned_data.get('contraseña')
-
-        if email and contraseña:
-            self.user = authenticate(username=email, password=contraseña)
-            if self.user is None:
-                raise forms.ValidationError("Email o contraseña incorrectos.")
-        return cleaned_data
-
-    def get_user(self):
-        return self.user
+class EditarUsuarioForm(forms.ModelForm):
+    class Meta:
+        model = Usuario
+        fields = ('username', 'email', 'first_name', 'last_name', 'dni', 'rol')
+        widgets = {
+            'username': forms.TextInput(attrs={'readonly': 'readonly'}),
+            'email': forms.EmailInput(attrs={'readonly': 'readonly'}),
+            'dni': forms.TextInput(attrs={'readonly': 'readonly'}),
+            'rol': forms.Select(attrs={'readonly': 'readonly'}),
+        }
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['rol'].help_text = "El rol no se puede cambiar una vez creado el usuario."
+        for field in self.fields.values():
+            if field.widget.attrs.get('readonly'):
+                field.widget.attrs.update({
+                    'style': 'background-color: #f0f0f0; color: #666; border: 1px solid #ccc;',
+                })
+            

@@ -5,7 +5,14 @@
 {% block content %}
 <div style="text-align: center; margin-top: 50px;">
     <h1>Bienvenido a Nexo</h1>
-    <p class="mt-3">Estás logueado como {{ request.user.nombre }} {{ request.user.apellido }}</p>
-    <a href="{% url 'logout' %}" class="btn btn-danger mt-3">Cerrar sesión</a>
+     {% if user.is_authenticated %}
+            <p class="mt-3" style="color: red;">Estás logueado como {{ user.first_name }} {{ user.last_name }}</p>
+            <a href="{% url 'logout' %}" class="btn btn-danger mt-3">Cerrar sesión</a>
+            {% else %}
+                <p class="mt-3">No estás logueado</p>
+                <a href="{% url 'login' %}" style="color: black; text-decoration: none; margin-left: 1rem;">Iniciar sesión</a>
+                <a href="{% url 'registro' %}" style="color: black; text-decoration: none; margin-left: 1rem;">Registrarse</a>
+            {% endif %}
+    
 </div>
-{% endblock %}
+{% endblock %}  
