@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Lista Usuarios{% endblock %}
+
+{% block content %}
+<h1>Lista de Usuarios</h1>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Correo Electrónico</th>
+            <th>Fecha de Registro</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for usuario in usuarios %}
+        <tr>
+            <td>{{ usuario.id }}</td>
+            <td>{{ usuario.first_name }} {{ usuario.last_name }}</td>
+            <td>{{ usuario.email }}</td>
+            <td>{{ usuario.date_joined|date:"Y-m-d" }}</td>
+            <td>
+                {% if usuario.is_active %}
+                    <a href="{% url 'deshabilitar_usuario' usuario.id %}">Deshabilitar</a>
+                {% else %}
+                    <a href="{% url 'habilitar_usuario' usuario.id %}">Habilitar</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">No hay usuarios registrados.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
