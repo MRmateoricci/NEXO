@@ -9,7 +9,6 @@
   <p><strong>Huéspedes:</strong> {{ inmueble.cantidad_huespedes }}</p>
   <p><strong>Dirección:</strong> {{ inmueble.calle }} {{ inmueble.numero }}, {{ inmueble.ciudad }}, {{ inmueble.provincia }}, {{ inmueble.pais }}</p>
   <p><strong>Estado:</strong> {{ inmueble.get_estado_display }}</p>
-  <p><strong>Propietario:</strong> {{ inmueble.propietario.email }}</p>
   <p><strong>Precio por día:</strong> ${{ inmueble.precio_diario }}</p>
 </div>
 <a href="{% url 'listar_inmuebles' %}" class="btn btn-info">Volver a la lista</a>
