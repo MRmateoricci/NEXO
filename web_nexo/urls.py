@@ -23,7 +23,7 @@ urlpatterns = [
     path('usuarios/', include('usuarios.urls')),
     path('reservas/', include('reservas.urls')),
     
-    #path('inmueble/', include('inmueble.urls'))
+    path('inmueble/', include('inmueble.urls'))
     
 
 ]

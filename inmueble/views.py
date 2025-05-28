@@ -85,3 +85,8 @@ def ver_disponibilidad(request, inmueble_id):
         'inmueble': inmueble,
         'eventos_json': json.dumps(eventos, cls=DjangoJSONEncoder)
     })
+
+
+def ver_detalle_inmueble(request, inmueble_id):
+    inmueble = get_object_or_404(Inmueble, pk=inmueble_id)
+    return render(request, 'inmueble/ver_detalle.html', {'inmueble': inmueble})

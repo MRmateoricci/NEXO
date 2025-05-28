@@ -39,6 +39,8 @@
         <strong>Estado:</strong> {{ inmueble.get_estado_display }}<br>
         <strong>Precio por día:</strong> ${{ inmueble.precio_diario }}
         <a href="{% url 'ver_disponibilidad' inmueble_id=inmueble.id %}" class="btn btn-primary">Fechas Disponibles</a>
+        <a href="{% url 'ver_detalle_inmueble' inmueble_id=inmueble.id %}" class="btn btn-info">Ver Detalle</a>
+
         <hr>
     </li>
     {% endfor %}
