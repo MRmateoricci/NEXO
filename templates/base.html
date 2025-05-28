@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -20,7 +21,8 @@
         {% endif %}
 
     <nav style="background-color: #282929; color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center;">
-        <div class="logo">
+        <div class="logo" style="display: flex; align-items: center;">
+            <img src="{% static 'img/logo.png' %}" alt="Logo" style="height: 80px; width: auto;">
             <a href="{% url 'home' %}" style="color: #ff571b; font-weight: bold; text-decoration: none;">Alquiler Express</a>
         </div>
         <div class="nav-links">
