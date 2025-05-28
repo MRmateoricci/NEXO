@@ -19,10 +19,11 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('nexo_app.urls')), 
+    path('', include('usuarios.urls')), 
     path('usuarios/', include('usuarios.urls')),
     path('reservas/', include('reservas.urls')),
-    path('inmueble/', include('inmueble.urls'))
+    
+    #path('inmueble/', include('inmueble.urls'))
     
 
 ]
