@@ -17,3 +17,4 @@ class SolicitudReserva(models.Model):
     estado = models.CharField(max_length=50, choices=[('pendiente', 'Pendiente'), ('confirmada', 'Confirmada'), ('cancelada', 'Cancelada')], default='pendiente')
 
 # Create your models here.
+

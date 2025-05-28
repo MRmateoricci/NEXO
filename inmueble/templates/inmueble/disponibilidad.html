@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Disponibilidad de {{ inmueble.titulo }}</h2>
+    <div id="calendar" class="mt-4"></div>
+</div>
+
+<!-- FullCalendar (CSS y JS) -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales/es.min.js"></script>
+
+<!-- Script para inicializar el calendario -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const calendarEl = document.getElementById('calendar');
+        const eventos = JSON.parse('{{ eventos_json|escapejs }}');  // Clave para evitar errores
+
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'es',
+            events: eventos
+        });
+
+        calendar.render();
+    });
+</script>
+{% endblock %}

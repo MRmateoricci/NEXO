@@ -1,20 +1,76 @@
-<h1>Inmuebles</h1>
-{% if inmuebles %}
-    <ul>
-        {% for inmueble in inmuebles %}
-        <li>
-            <strong>Nombre:</strong> {{ inmueble.Nombre}}<br>
-            <strong>Descripción:</strong> {{ inmueble.descripcion }}<br>
-            <strong>Tipo:</strong> {{ inmueble.tipo }}<br>
-            <strong>Metros cuadrados:</strong> {{ inmueble.metros_cuadrados }}<br>
-            <strong>Huéspedes:</strong> {{ inmueble.cantidad_huespedes }}<br>
-            <strong>Dirección:</strong> {{ inmueble.calle }} {{ inmueble.numero }}, {{ inmueble.ciudad }}, {{ inmueble.provincia }}, {{ inmueble.pais }}<br>
-            <strong>Estado:</strong> {{ inmueble.estado }}<br>
-            <strong>Precio por día:</strong> ${{ inmueble.precio_diario }}
-            <hr>
-        </li>
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Lista de Inmuebles</h1>
+    <a href="{% url 'alta_inmueble' %}" style="
+    display: inline-block;
+    background-color: gainsboro;
+    color: black;
+    padding: 10px 15px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    "> Dar de Alta Inmueble</a>
+    {% load custom_filters %}
+
+    <form method="get">
+        <!-- Filtro de Tipo -->
+        <label for="tipo">Tipo:</label>
+        <select name="tipo" id="tipo">
+            <option value="">Todos</option>
+            {% for value, label in tipo_choices %}
+            <option value="{{ value }}" {% if tipo|equals:value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+
+        <!-- Filtro de Huéspedes -->
+        <label for="huespedes">Cantidad mínima de huéspedes:</label>
+        <input type="number" name="huespedes" id="huespedes" min="1" value="{{ huespedes|default:'' }}">
+
+        <!-- Filtro de Metros -->
+        <label for="metros">Metros cuadrados mínimos:</label>
+        <input type="number" name="metros" id="metros" min="1" step="0.01" value="{{ metros|default:'' }}">
+
+        <button type="submit">Filtrar</button>
+        <a href="{% url 'listar_inmuebles' %}" class="btn btn-secondary">Limpiar filtros</a>
+    </form>
+
+    <hr>
+
+    {% if page_obj %}
+    <div class ="grid-containter">
+        {% for inmueble in page_obj %}
+            <div class="tarjeta">
+            <h3>{{ inmueble.titulo }}</h3>
+            <p><strong>Tipo:</strong> {{ inmueble.tipo }}</p>
+            <p><strong>Ciudad:</strong> {{ inmueble.ciudad }}</p>
+            <p><strong>Precio:</strong> ${{ inmueble.precio_diario }}</p>
+            <p><strong>Estado:</strong> {{ inmueble.estado }}</p>
+            </div>
+            <a href="{% url 'ver_disponibilidad' inmueble_id=inmueble.id %}" class="btn btn-primary">Fechas Disponibles</a>
+            <a href="{% url 'ver_detalle_inmueble' inmueble_id=inmueble.id %}" class="btn btn-info">Ver Detalle</a>
+            <a href="{% url 'eliminar_inmueble' id=inmueble.id %}" style="color: red;">Eliminar</a>
         {% endfor %}
-    </ul>
-    {% else%}
-        <h3> Aun no hay inmuebles cargados.</h3>
-{% endif %}
+    <!-- Paginación -->
+    <div class="pagination">
+        <span>
+            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+        </span>
+
+        {% if page_obj.has_previous %}
+        <a
+            href="?{% if tipo %}tipo={{ tipo }}&{% endif %}{% if huespedes %}huespedes={{ huespedes }}&{% endif %}{% if metros %}metros={{ metros }}&{% endif %}page={{ page_obj.previous_page_number }}">Anterior</a>
+        {% endif %}
+
+        {% if page_obj.has_next %}
+        <a
+            href="?{% if tipo %}tipo={{ tipo }}&{% endif %}{% if huespedes %}huespedes={{ huespedes }}&{% endif %}{% if metros %}metros={{ metros }}&{% endif %}page={{ page_obj.next_page_number }}">Siguiente</a>
+        {% endif %}
+    </div>
+
+    {% else %}
+    <h3>Aún no hay inmuebles cargados.</h3>
+    {% endif %}
+    </div>
+{% endblock %}

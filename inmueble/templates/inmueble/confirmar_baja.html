@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>¿Estás seguro de que querés eliminar este inmueble?</h2>
+  <p><strong>{{ inmueble.titulo }}</strong> - {{ inmueble.ciudad }}</p>
+
+  <form method="POST">
+    {% csrf_token %}
+    <button type="submit" style="background-color: red; color: white;">Sí, eliminar</button>
+    <a href="{% url 'listar_inmuebles' %}">Cancelar</a>
+  </form>
+{% endblock %}

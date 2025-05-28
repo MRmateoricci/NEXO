@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>{{ inmueble.titulo }}</h2>
+  <p><strong>Descripción:</strong> {{ inmueble.descripcion }}</p>
+  <p><strong>Tipo:</strong> {{ inmueble.get_tipo_display }}</p>
+  <p><strong>Metros cuadrados:</strong> {{ inmueble.metros_cuadrados }}</p>
+  <p><strong>Huéspedes:</strong> {{ inmueble.cantidad_huespedes }}</p>
+  <p><strong>Dirección:</strong> {{ inmueble.calle }} {{ inmueble.numero }}, {{ inmueble.ciudad }}, {{ inmueble.provincia }}, {{ inmueble.pais }}</p>
+  <p><strong>Estado:</strong> {{ inmueble.get_estado_display }}</p>
+  <p><strong>Precio por día:</strong> ${{ inmueble.precio_diario }}</p>
+</div>
+<a href="{% url 'listar_inmuebles' %}" class="btn btn-info">Volver a la lista</a>
+{% endblock %}

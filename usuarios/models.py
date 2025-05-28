@@ -1,11 +1,14 @@
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-class Usuario(models.Model):
-    nombre = models.CharField(max_length=100)
-    apellido = models.CharField(max_length=100)
-    dni = models.CharField(max_length=20, unique=True)
-    email = models.EmailField(unique=True)
-    contraseña = models.CharField(max_length=100)
-    rol = models.CharField(max_length=50, choices=[('admin', 'Admin'), ('inquilino', 'Inquilino'), ('Empleado', 'Empleado')])
-    estado = models.BooleanField(default=True)
-# Create your models here.
+class Usuario(AbstractUser):
+    ROLES = (
+        ('admin', 'Admin'),
+        ('inquilino', 'Inquilino'),
+        ('empleado', 'Empleado'),
+    )
+    dni = models.CharField(max_length=8, unique=True, verbose_name='DNI')
+    rol = models.CharField(max_length=20, choices=ROLES, default='Inquilino')
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name} ({self.dni})"
