@@ -109,3 +109,16 @@ def eliminar_inmueble(request, id):
         inmueble.delete()
         return redirect('listar_inmuebles')
     return render(request, 'inmueble/confirmar_baja.html',{'inmueble': inmueble})
+
+from .forms import EditarInmueble
+
+def editar_inmueble(request, id):
+    inmueble = get_object_or_404(Inmueble,pk=id)
+    if request.method == "POST":
+        form = EditarInmueble(request.POST, instance=inmueble)
+        if form.is_valid():
+            form.save()
+            return redirect('listar_inmuebles')
+    else:
+        form = EditarInmueble(instance=inmueble)
+    return render(request, 'inmueble/editar.html',{'form': form})

@@ -6,3 +6,9 @@ class AltaInmueble(forms.ModelForm):
         model = Inmueble
         fields = '__all__' 
         exclude = []
+
+class EditarInmueble(forms.ModelForm):
+    class Meta:
+        model = Inmueble
+        fields = '__all__'
+        exclude = []
