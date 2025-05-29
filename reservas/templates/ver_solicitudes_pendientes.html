@@ -1,0 +1,40 @@
+<h1 style="text-align: center;">Mis Solicitudes de Reserva Pendientes</h1>
+
+<style>
+.form-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+}
+ul {
+    list-style: none;
+    padding: 0;
+    width: 100%;
+    max-width: 500px;
+}
+li {
+    margin-bottom: 1em;
+    font-size: 1.2em;
+    background: #f5f5f5;
+    border-radius: 8px;
+    padding: 1em;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+</style>
+
+<div class="form-container">
+    <ul>
+        {% for solicitud in solicitudes %}
+            <li>
+                <strong>Inmueble:</strong> {{ solicitud.inmueble }}<br>
+                <strong>Fecha inicio:</strong> {{ solicitud.fecha_inicio }}<br>
+                <strong>Fecha fin:</strong> {{ solicitud.fecha_fin }}<br>
+                <strong>Estado:</strong> {{ solicitud.estado }}
+            </li>
+        {% empty %}
+            <li>No tienes solicitudes de reserva pendientes.</li>
+        {% endfor %}
+    </ul>
+</div>

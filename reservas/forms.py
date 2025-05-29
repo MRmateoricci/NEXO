@@ -3,14 +3,14 @@ from django import forms
 class crearReservaForm(forms.Form):
     fecha_inicio = forms.DateField(
         label='Fecha de Inicio',
-        widget=forms.DateInput(attrs={'type': 'date'}),
+        widget=forms.TextInput(attrs={'class': 'flatpickr', 'autocomplete': 'off'}),
         error_messages={'required': 'Este campo es obligatorio', 'invalid': 'Formato de fecha inválido. Usa el formato YYYY-MM-DD.'
         }
     )
     
     fecha_fin = forms.DateField(
         label='Fecha de Fin',
-        widget=forms.DateInput(attrs={'type': 'date'}),
+        widget=forms.TextInput(attrs={'class': 'flatpickr', 'autocomplete': 'off'}),
         error_messages={'required': 'Este campo es obligatorio', 'invalid': 'Formato de fecha inválido. Usa el formato YYYY-MM-DD.'
         }
     )

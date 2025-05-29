@@ -1,0 +1,17 @@
+<h1 style="text-align: center;">Validar Solicitudes de Reserva</h1>
+<ul>
+    {% for solicitud in solicitudes %}
+        <li>
+            {{ solicitud.inquilino }} - {{ solicitud.inmueble }}<br>
+            {{ solicitud.fecha_inicio }} a {{ solicitud.fecha_fin }}
+            <form method="post" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="solicitud_id" value="{{ solicitud.id }}">
+                <button type="submit" name="accion" value="aceptar">Aceptar</button>
+                <button type="submit" name="accion" value="rechazar">Rechazar</button>
+            </form>
+        </li>
+    {% empty %}
+        <li>No hay solicitudes pendientes.</li>
+    {% endfor %}
+</ul>

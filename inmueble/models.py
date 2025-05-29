@@ -12,7 +12,6 @@ class Inmueble(models.Model):
     ciudad = models.CharField(max_length=50)
     provincia = models.CharField(max_length=50)
     pais = models.CharField(max_length=50)
-    estado = models.CharField(max_length=50, choices=[('disponible', 'Disponible'), ('reservado', 'Reservado'), ('no disponible', 'No disponible')])
-    propietario = models.ForeignKey('usuarios.Usuario', on_delete=models.CASCADE)
+    estado = models.CharField(max_length=50, choices=[('Disponible', 'Disponible'), ('Reservado', 'Reservado'), ('no disponible', 'No disponible')])
     precio_diario = models.DecimalField(max_digits=10, decimal_places=2)
 # Create your models here.

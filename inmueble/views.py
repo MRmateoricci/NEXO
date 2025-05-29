@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect, get_object_or_404
 from .models import Inmueble
 from django.db.models import Q
 from django.core.paginator import Paginator
@@ -90,3 +90,22 @@ def ver_disponibilidad(request, inmueble_id):
 def ver_detalle_inmueble(request, inmueble_id):
     inmueble = get_object_or_404(Inmueble, pk=inmueble_id)
     return render(request, 'inmueble/ver_detalle.html', {'inmueble': inmueble})
+
+from .forms import AltaInmueble
+
+def dar_alta_inmueble(request):
+    if request.method == 'POST':
+        formulario = AltaInmueble(request.POST)
+        if formulario.is_valid():
+            formulario.save()
+            return redirect('listar_inmuebles')
+    else:
+        formulario = AltaInmueble()
+    return render(request, 'inmueble/dar_alta.html', {'form': formulario})
+
+def eliminar_inmueble(request, id):
+    inmueble = get_object_or_404(Inmueble, pk=id)    
+    if request.method == 'POST':
+        inmueble.delete()
+        return redirect('listar_inmuebles')
+    return render(request, 'inmueble/confirmar_baja.html',{'inmueble': inmueble})

@@ -1,4 +1,16 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+
+{% block title %}Crear Solicitud de Reserva{% endblock %}
+
+{% block content %}
+
 <h1 style="text-align: center;">Crear Solicitud de reserva</h1>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
 
 <style>
 .form-container {
@@ -52,3 +64,12 @@
         </ul>
     {% endif %}
 </div>
+
+{{ fechas_ocupadas|json_script:"fechas-ocupadas-data" }}
+<script>
+    window.fechasOcupadas = JSON.parse(document.getElementById('fechas-ocupadas-data').textContent);
+</script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="{% static 'reservas/js/crear_reserva.js' %}"></script>
+{% endblock %}
+
