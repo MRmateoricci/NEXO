@@ -50,7 +50,7 @@
             </div>
             <a href="{% url 'ver_disponibilidad' inmueble_id=inmueble.id %}" class="btn btn-primary">Fechas Disponibles</a>
             <a href="{% url 'ver_detalle_inmueble' inmueble_id=inmueble.id %}" class="btn btn-info">Ver Detalle</a>
-            <a href="{% url 'crear_reserva' inmueble_id=inmueble.id %}" class="btn btn-warning">Editar</a>
+            <a href="{% url 'crear_reserva' inmueble_id=inmueble.id %}" class="btn btn-warning">Reservar</a>
             <a href="{% url 'eliminar_inmueble' id=inmueble.id %}" style="color: red;">Eliminar</a>
         {% endfor %}
     <!-- Paginación -->
