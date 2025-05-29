@@ -3,6 +3,7 @@ from django.contrib.auth import login, logout, views as auth_views
 from django.contrib import messages
 from .forms import RegistroForm, LoginForm, EditarUsuarioForm
 from .models import Usuario
+from inmueble.models import Inmueble
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 
@@ -58,7 +59,8 @@ def editar_usuario(request):
     return render(request, 'usuarios/editar_usuario.html', {'form': form})
 
 def home(request):
-    return render(request, 'usuarios/home.html')
+    inmuebles = Inmueble.objects.all()  # Obtener todos los inmuebles
+    return render(request, 'usuarios/home.html' , {'inmuebles': inmuebles})
 
 # View para pedir email para resetear contraseña
 class PasswordReset(auth_views.PasswordResetView):

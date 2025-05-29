@@ -1,18 +1,108 @@
 {% extends 'base.html' %}
+{% load static %}   
 
-{% block title %}Inicio{% endblock %}
+
+{% block title %}Inicio - Alquiler Express{% endblock %}
 
 {% block content %}
-<div style="text-align: center; margin-top: 50px;">
-    <h1>Bienvenido a Nexo</h1>
-     {% if user.is_authenticated %}
-            <p class="mt-3" style="color: red;">Estás logueado como {{ user.first_name }} {{ user.last_name }}</p>
-            <a href="{% url 'logout' %}" class="btn btn-danger mt-3">Cerrar sesión</a>
-            {% else %}
-                <p class="mt-3">No estás logueado</p>
-                <a href="{% url 'login' %}" style="color: black; text-decoration: none; margin-left: 1rem;">Iniciar sesión</a>
-                <a href="{% url 'registro' %}" style="color: black; text-decoration: none; margin-left: 1rem;">Registrarse</a>
-            {% endif %}
-    
+<style>
+    body {
+        background-color: white;
+        color: white;
+        background-image: url("{% static 'img/logo.png' %}");
+        background-repeat: no-repeat;
+        background-position: bottom right;
+        background-size: 700px;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .contenedor-central {
+        text-align: center;
+        margin-top: 10px;
+        padding: 2rem;
+    }
+
+    .titulo {
+        font-size: 3rem;
+        color: #FFA500; /* naranja */
+        margin-bottom: 1rem;
+    }
+
+    .frase {
+        font-size: 1.5rem;
+        color: #00BFFF; /* azul */
+        margin-bottom: 2rem;
+    }
+
+    .inmuebles {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .card {
+        background-color: #1a1a1a;
+        border: 1px solid #00BFFF;
+        padding: 1rem;
+        border-radius: 10px;
+        width: 250px;
+        color: white;
+        text-align: left;
+    }
+
+    .btn-ver {
+        margin-top: 1rem;
+        display: inline-block;
+        background-color: #FFA500;
+        color: black;
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        text-decoration: none;
+    }
+
+    .btn-ver:hover {
+        background-color: #ffbb33;
+    }
+
+    .ver-todos {
+        margin-top: 2rem;
+    }
+
+    .ver-todos a {
+        color: #00BFFF;
+        text-decoration: underline;
+    }
+</style>
+
+<div class="contenedor-central">
+    <h1 class="titulo">Alquiler Express</h1>
+    <p class="frase">Tu próximo hogar te está esperando. Alquilá fácil, rápido y seguro.</p>
+
+    <div class="inmuebles">
+        {% for inmueble in inmuebles|slice:":4" %}
+            <div class="card">
+                <h5>{{ inmueble.titulo }}</h5>
+                <p>{{ inmueble.descripcion|truncatechars:100 }}</p>
+                <a href="{% url 'ver_detalle_inmueble' inmueble.id %}" class="btn-ver">Ver más</a>
+            </div>
+        {% empty %}
+            <p>No hay inmuebles disponibles.</p>
+        {% endfor %}
+    </div>
+
+    <div class="ver-todos">
+        <a href="{% url 'listar_inmuebles' %}">Ver todos los inmuebles →</a>
+    </div>
+
+    {% if user.is_authenticated %}
+        <p class="mt-3" style="color: white;">Estás logueado como {{ user.first_name }} {{ user.last_name }}</p>
+        <a href="{% url 'logout' %}" class="btn-ver" style="margin-top: 1rem;">Cerrar sesión</a>
+    {% else %}
+        <p class="mt-3">No estás logueado</p>
+        <a href="{% url 'login' %}" class="btn-ver" style="margin-right: 1rem;">Iniciar sesión</a>
+        <a href="{% url 'registro' %}" class="btn-ver">Registrarse</a>
+    {% endif %}
 </div>
-{% endblock %}  
+{% endblock %}
