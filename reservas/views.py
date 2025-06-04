@@ -1,5 +1,6 @@
 import json
-from django.shortcuts import get_object_or_404, render
+from pyexpat.errors import messages
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
 from .models import Inquilino, Reserva, SolicitudReserva
 from django.http import JsonResponse, HttpResponse
@@ -17,9 +18,9 @@ def ReservasView(request):
 
 def crearReservaView(request, inmueble_id):
     inmueble = get_object_or_404(Inmueble, id=inmueble_id)
-    usuario_principal = request.user  # Asume que el usuario está autenticado
+    usuario_principal = request.user
 
-    # Obtener fechas ocupadas (lógica existente)
+    # Obtener fechas ocupadas
     reservas = SolicitudReserva.objects.filter(inmueble=inmueble).exclude(estado='cancelada')
     fechas_ocupadas = [
         {'fecha_inicio': r.fecha_inicio.strftime('%Y-%m-%d'), 'fecha_fin': r.fecha_fin.strftime('%Y-%m-%d')}
@@ -27,41 +28,48 @@ def crearReservaView(request, inmueble_id):
     ]
 
     if request.method == 'POST':
-        form = forms.crearReservaForm(request.POST)
-        if form.is_valid():
-            # Crear la reserva base
-            reserva = SolicitudReserva(
-                fecha_inicio=form.cleaned_data['fecha_inicio'],
-                fecha_fin=form.cleaned_data['fecha_fin'],
+        fecha_inicio = request.POST.get('fecha_inicio')
+        fecha_fin = request.POST.get('fecha_fin')
+
+        if not fecha_inicio or not fecha_fin:
+            return JsonResponse({'error': 'Debés completar ambas fechas.'}, status=400)
+
+        try:
+            # Crear la reserva
+            reserva = SolicitudReserva.objects.create(
+                fecha_inicio=fecha_inicio,
+                fecha_fin=fecha_fin,
                 inquilino=usuario_principal,
                 inmueble=inmueble,
                 estado='pendiente'
             )
-            reserva.save()
 
-            # Procesar inquilinos existentes (IDs de usuarios registrados)
+            # Procesar inquilinos existentes
             inquilinos_existentes_ids = request.POST.getlist('inquilinos_existentes', [])
             for usuario_id in inquilinos_existentes_ids:
                 usuario = get_object_or_404(Usuario, id=usuario_id)
                 inquilino, _ = Inquilino.objects.get_or_create(
                     usuario=usuario,
-                    defaults={'nombre': usuario.get_full_name(), 'dni': 'N/A', 'edad': 0, 'creado_por': usuario_principal}
+                    defaults={
+                        'nombre': usuario.get_full_name(),
+                        'dni': 'N/A',
+                        'edad': 0,
+                        'creado_por': usuario_principal
+                    }
                 )
                 reserva.inquilinos.add(inquilino)
 
-            # Recibir el JSON como string (un solo input con todos los nuevos inquilinos)
-            inquilinos_nuevos_json = request.POST.get('inquilinos_nuevos', '[]')
+            # Procesar inquilinos nuevos
+            inquilinos_nuevos = []
+            inquilinos_nuevos_json = request.POST.get('inquilinos_nuevos')
+            if inquilinos_nuevos_json:
+                try:
+                    inquilinos_nuevos = json.loads(inquilinos_nuevos_json)
+                    if not isinstance(inquilinos_nuevos, list):
+                        inquilinos_nuevos = [inquilinos_nuevos]
+                except json.JSONDecodeError:
+                    pass
 
-            try:
-                inquilinos_nuevos = json.loads(inquilinos_nuevos_json)
-            except json.JSONDecodeError:
-                inquilinos_nuevos = []
-
-            # Asegurar que sea una lista, no un dict
-            if isinstance(inquilinos_nuevos, dict):
-                inquilinos_nuevos = [inquilinos_nuevos]
-
-            # Crear los inquilinos
             for data in inquilinos_nuevos:
                 inquilino = Inquilino.objects.create(
                     nombre=data.get('nombre', ''),
@@ -71,19 +79,22 @@ def crearReservaView(request, inmueble_id):
                 )
                 reserva.inquilinos.add(inquilino)
 
-            return JsonResponse({'success': True, 'reserva_id': reserva.id})
+            return JsonResponse({
+                'success': True,
+                'redirect_url': '/inmueble/listar'  # URL a la que redirigir
+            })
 
-        else:
-            return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'error': f'Error al crear la reserva: {str(e)}'
+            }, status=500)
 
-    else:
-        # GET: Mostrar formulario con opciones de inquilinos
-        usuarios_registrados = Usuario.objects.exclude(id=usuario_principal.id)  # Excluye al usuario actual
-        return render(request, 'crear_reserva.html', {
-            'crear_reserva_form': forms.crearReservaForm(),
-            'fechas_ocupadas': fechas_ocupadas,
-            'usuarios_registrados': usuarios_registrados,
-        })
+    # GET
+    return render(request, 'crear_reserva.html', {
+        'fechas_ocupadas': fechas_ocupadas
+    })
+
+        
     
 def eliminarReservaView(request):
     #usuario = request.user  # Usuario autenticado

@@ -94,6 +94,13 @@
         font-size: 13px;
         margin-top: 5px;
     }
+
+    .flatpickr-day.disabled {
+        background: #f8d7da !important;
+        color: #721c24 !important;
+        border-color: #f5c6cb !important;
+        cursor: not-allowed;
+    }
 </style>
 
 <div class="form-container">
@@ -103,13 +110,15 @@
         <!-- Sección de fechas -->
         <div class="form-section">
             <h3 style="margin-top: 0; color: #343a40;">Datos de la reserva</h3>
-            {% for field in crear_reserva_form %}
             <div class="form-field">
-                {{ field.label_tag }}
-                {{ field }}
-                {{ field.errors }}
+                <label for="fecha_inicio">Fecha inicio</label>
+                <input type="text" id="fecha_inicio" name="fecha_inicio" class="form-control">
             </div>
-            {% endfor %}
+
+            <div class="form-field">
+                <label for="fecha_fin">Fecha fin</label>
+                <input type="text" id="fecha_fin" name="fecha_fin" class="form-control">
+            </div>
         </div>
 
         <!-- Sección de inquilinos -->
@@ -157,13 +166,37 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     $(document).ready(function () {
-        // Inicializar Select2 para búsqueda de usuarios
+        // Configuración de Flatpickr para fechas
+        const fechasOcupadas = JSON.parse(document.getElementById('fechas-ocupadas-data').textContent);
+        const rangosBloqueados = fechasOcupadas.map(f => ({
+            from: f.fecha_inicio,
+            to: f.fecha_fin
+        }));
+
+        flatpickr("#fecha_inicio", {
+            dateFormat: "Y-m-d",
+            disable: rangosBloqueados,
+            minDate: "today",
+            onChange: function (selectedDates, dateStr) {
+                // Actualizar fecha mínima de fin cuando se selecciona inicio
+                flatpickr("#fecha_fin").set("minDate", dateStr);
+            }
+        });
+
+        flatpickr("#fecha_fin", {
+            dateFormat: "Y-m-d",
+            disable: rangosBloqueados,
+            minDate: "today"
+        });
+
+        // Configuración de Select2 para búsqueda de usuarios
         $('#buscar-usuario').select2({
-            placeholder: "Buscar por nombre o DNI",
+            placeholder: "Buscar por nombre o email",
+            minimumInputLength: 2,
             ajax: {
                 url: '{% url "buscar_usuarios" %}',
                 dataType: 'json',
-                delay: 250,
+                delay: 300,
                 data: function (params) {
                     return { q: params.term };
                 },
@@ -173,7 +206,7 @@
             }
         });
 
-        // Array para almacenar inquilinos
+        // Array para almacenar inquilinos temporalmente
         let inquilinos = [];
 
         // Agregar usuario registrado
@@ -183,8 +216,8 @@
                 inquilinos.push({
                     tipo: 'existente',
                     id: usuario.id,
-                    nombre: usuario.nombre || usuario.text,
-                    dni: usuario.dni || 'N/A'
+                    nombre: usuario.text.split(' (')[0], // Extrae solo el nombre
+                    dni: 'N/A'
                 });
                 actualizarListaInquilinos();
                 $('#buscar-usuario').val(null).trigger('change');
@@ -208,11 +241,11 @@
                 // Limpiar campos
                 $('#nombre-inquilino, #dni-inquilino, #edad-inquilino').val('');
             } else {
-                alert('Por favor complete todos los campos');
+                alert('Por favor complete todos los campos del inquilino');
             }
         });
 
-        // Actualizar lista visual
+        // Función para actualizar la lista visual
         function actualizarListaInquilinos() {
             const lista = $('#inquilinos-list');
             lista.empty();
@@ -231,17 +264,53 @@
 
                 // Agregar campos ocultos al formulario
                 if (inq.tipo === 'existente') {
-                    $('#reserva-form').append(`<input type="hidden" name="inquilinos_existentes" value="${inq.id}">`);
+                    $('#reserva-form').append(
+                        `<input type="hidden" name="inquilinos_existentes" value="${inq.id}">`
+                    );
                 } else {
-                    $('#reserva-form').append(`<input type="hidden" name="inquilinos_nuevos" value='${JSON.stringify(inq)}'>`);
+                    $('#reserva-form').append(
+                        `<input type="hidden" name="inquilinos_nuevos" value='${JSON.stringify(inq)}'>`
+                    );
                 }
             });
         }
+
+        // Manejo del envío del formulario
+        $('#reserva-form').on('submit', function (e) {
+            e.preventDefault();
+
+            // Validación básica de fechas
+            if (!$('#fecha_inicio').val() || !$('#fecha_fin').val()) {
+                alert('Por favor seleccione ambas fechas');
+                return;
+            }
+
+            $.ajax({
+                url: $(this).attr('action'),
+                method: 'POST',
+                data: $(this).serialize(),
+                success: function (response) {
+                    if (response.success && response.redirect_url) {
+                        window.location.href = response.redirect_url;
+                    } else {
+                        alert(response.error || 'Reserva creada, pero no se recibió URL de redirección');
+                    }
+                },
+                error: function (xhr) {
+                    try {
+                        const error = JSON.parse(xhr.responseText);
+                        alert(error.error || 'Error al procesar la solicitud');
+                    } catch {
+                        alert('Error de conexión con el servidor');
+                    }
+                }
+            });
+        });
     });
 
     // Función global para eliminar inquilinos
     function eliminarInquilino(index) {
-        // Recupera el array de inquilinos del contexto del documento
+        // Obtener array actual de inquilinos
         const inquilinos = [];
         $('[name^="inquilinos_"]').each(function () {
             if ($(this).attr('name').includes('nuevos')) {
@@ -254,14 +323,14 @@
             }
         });
 
-        // Elimina el elemento y actualiza
+        // Eliminar el elemento seleccionado
         inquilinos.splice(index, 1);
+
+        // Limpiar y regenerar
         $('[name^="inquilinos_"]').remove();
+        const lista = $('#inquilinos-list').empty();
 
-        // Vuelve a generar los campos ocultos
-        const lista = $('#inquilinos-list');
-        lista.empty();
-
+        // Volver a agregar los restantes
         inquilinos.forEach((inq, idx) => {
             lista.append(`
                 <div class="inquilino-item">
@@ -271,9 +340,13 @@
             `);
 
             if (inq.tipo === 'existente') {
-                $('#reserva-form').append(`<input type="hidden" name="inquilinos_existentes" value="${inq.id}">`);
+                $('#reserva-form').append(
+                    `<input type="hidden" name="inquilinos_existentes" value="${inq.id}">`
+                );
             } else {
-                $('#reserva-form').append(`<input type="hidden" name="inquilinos_nuevos" value='${JSON.stringify(inq)}'>`);
+                $('#reserva-form').append(
+                    `<input type="hidden" name="inquilinos_nuevos" value='${JSON.stringify(inq)}'>`
+                );
             }
         });
     }
