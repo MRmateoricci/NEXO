@@ -2,16 +2,18 @@
 
 {% block content %}
     <h1>Lista de Inmuebles</h1>
-    <a href="{% url 'alta_inmueble' %}" style="
-    display: inline-block;
-    background-color: gainsboro;
-    color: black;
-    padding: 10px 15px;
-    text-decoration: none;
-    border-radius: 5px;
-    font-weight: bold;
-    margin-bottom: 20px;
-    "> Dar de Alta Inmueble</a>
+    {% if user.is_authenticated and user.rol == "empleado" or user.rol == "admin" %}
+        <a href="{% url 'alta_inmueble' %}" style="
+        display: inline-block;
+        background-color: gainsboro;
+        color: black;
+        padding: 10px 15px;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        "> Dar de Alta Inmueble</a>
+    {% endif %}
     {% load custom_filters %}
 
     <form method="get">
@@ -50,9 +52,15 @@
             </div>
             <a href="{% url 'ver_disponibilidad' inmueble_id=inmueble.id %}" class="btn btn-primary">Fechas Disponibles</a>
             <a href="{% url 'ver_detalle_inmueble' inmueble_id=inmueble.id %}" class="btn btn-info">Ver Detalle</a>
-            <a href="{% url 'crear_reserva' inmueble_id=inmueble.id %}" class="btn btn-warning">Reservar</a>
-            <a href="{% url 'editar_inmueble' id=inmueble.id %}" class="btn btn-warning">Editar</a>
-            <a href="{% url 'eliminar_inmueble' id=inmueble.id %}" style="color: red;">Eliminar</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'crear_reserva' inmueble_id=inmueble.id %}" class="btn btn-warning">Reservar</a>
+            {% else %}
+                <a href="{% url 'login' %}?next={% url 'crear_reserva' inmueble_id=inmueble.id %}" class="btn btn-warning">Reservar</a>
+            {% endif %}
+            {% if user.is_authenticated and user.rol == "admin" or user.rol == "empleado" %}
+                <a href="{% url 'editar_inmueble' id=inmueble.id %}" class="btn btn-warning">Editar</a>
+                <a href="{% url 'eliminar_inmueble' id=inmueble.id %}" style="color: red;">Eliminar</a>
+            {% endif %}
         {% endfor %}
     <!-- Paginación -->
     <div class="pagination">

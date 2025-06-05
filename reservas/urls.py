@@ -15,8 +15,10 @@ urlpatterns = [
     #path('reservas/editar/<int:pk>/', EditarReservaView.as_view(), name='editar_reserva'),
     
     # URL para la vista de eliminar reserva
-    path('eliminar/', views.eliminarReservaView, name='eliminar_reserva'),
+    path('cancelar/', views.eliminarReservaView, name='cancelar_reserva'),
 
     path('buscar-usuarios/', views.buscar_usuarios_view, name='buscar_usuarios'),
     path('gestion-inquilinos/<int:reserva_id>/', views.gestion_inquilinos_view, name='gestion_inquilinos'),
+    path('validar/', views.validarSolicitudReservaView, name='validar_solicitud_reserva'),
+    path('ver-solicitudes-pendientes/<int:inquilino_id>/', views.verSolicitudesPendientesView, name='ver_solicitudes_pendientes'),
 ]

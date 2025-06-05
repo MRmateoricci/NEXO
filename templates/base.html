@@ -46,7 +46,9 @@
             {% if user.is_authenticated %}
                 {% if user.rol == 'admin' or user.rol == 'empleado' %}
                     <a href="{% url 'lista_usuarios' %}" style="display:block; color: #FFA500; margin:0.5rem 0;">Ver usuarios</a>
+                    <a href="{% url 'validar_solicitud_reserva' %}" style="display:block; color: #FFA500; margin:0.5rem 0;">Validar Solicitudes de reserva</a>
                 {% endif %}
+                    <a href="{% url 'ver_solicitudes_pendientes' user.id %}" style="display: block; color: #FFA500; margin:0.5rem 0;">Ver historial de reservas Pendientes</a>
             {% endif %}
             <a href="{% url 'listar_inmuebles' %}" style="display:block; color: #FFA500; margin:0.5rem 0;">Inmuebles</a>
         </div>

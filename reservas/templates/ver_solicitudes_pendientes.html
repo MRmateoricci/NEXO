@@ -1,5 +1,7 @@
-<h1 style="text-align: center;">Mis Solicitudes de Reserva Pendientes</h1>
+{% extends 'base.html' %}
 
+{% block content %}
+<h1 style="text-align: center;">Mis Solicitudes de Reserva Pendientes</h1>
 <style>
 .form-container {
     display: flex;
@@ -24,17 +26,41 @@ li {
 }
 </style>
 
-<div class="form-container">
-    <ul>
-        {% for solicitud in solicitudes %}
-            <li>
-                <strong>Inmueble:</strong> {{ solicitud.inmueble }}<br>
-                <strong>Fecha inicio:</strong> {{ solicitud.fecha_inicio }}<br>
-                <strong>Fecha fin:</strong> {{ solicitud.fecha_fin }}<br>
-                <strong>Estado:</strong> {{ solicitud.estado }}
-            </li>
-        {% empty %}
-            <li>No tienes solicitudes de reserva pendientes.</li>
-        {% endfor %}
-    </ul>
-</div>
+<ul>
+{% for solicitud in solicitudes %}
+    <li id="solicitud-{{ solicitud.id }}">
+        <strong>Inmueble:</strong> {{ solicitud.inmueble }}<br>
+        <strong>Fecha inicio:</strong> {{ solicitud.fecha_inicio }}<br>
+        <strong>Fecha fin:</strong> {{ solicitud.fecha_fin }}<br>
+        <strong>Estado:</strong> {{ solicitud.estado }}
+        <button class="btn btn-danger" style="margin-left: 1em;"
+            onclick="eliminarSolicitud('{{ solicitud.id }}')">Eliminar</button>
+    </li>
+{% empty %}
+    <li>No tienes solicitudes de reserva pendientes.</li>
+{% endfor %}
+</ul>
+
+<script>
+function eliminarSolicitud(id) {
+    if (confirm('¿Estás seguro de que deseas eliminar esta solicitud?')) {
+        fetch("{% url 'cancelar_reserva' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+            body: JSON.stringify({ solicitud_id: id })
+        })
+        .then(response => {
+            if (response.ok) {
+                // Elimina el elemento de la lista del DOM
+                document.getElementById('solicitud-' + id).remove();
+            } else {
+                alert('No se pudo eliminar la solicitud.');
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

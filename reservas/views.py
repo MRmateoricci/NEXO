@@ -7,6 +7,7 @@ from . import forms
 from usuarios.models import Usuario
 from inmueble.models import Inmueble
 from django.contrib.auth.decorators import user_passes_test
+from django.utils import timezone
 
 def es_empleado(usuario):
     return getattr(usuario, 'rol', '').lower() == 'empleado'
@@ -86,25 +87,23 @@ def crearReservaView(request, inmueble_id):
         })
     
 def eliminarReservaView(request):
-    #usuario = request.user  # Usuario autenticado
-    usuario = Usuario.objects.get(id=1)  # Cambia esto por el usuario autenticado
-    reservas = SolicitudReserva.objects.filter(inquilino=usuario)
-
-    if request.method == 'POST':
-        ids_a_eliminar = request.POST.getlist('reservas')
-        SolicitudReserva.objects.filter(id__in=ids_a_eliminar, inquilino=usuario).delete()
-        return render(request, 'eliminar_reserva.html', {
-            'reservas': SolicitudReserva.objects.filter(inquilino=usuario),
-            'mensaje': 'Reservas eliminadas correctamente.'
-        })
-
-    return render(request, 'eliminar_reserva.html', {'reservas': reservas})
+    if request.method == "POST":
+        import json
+        data = json.loads(request.body)
+        solicitud_id = data.get("solicitud_id")
+        try:
+            solicitud = SolicitudReserva.objects.get(id=solicitud_id)
+            solicitud.delete()
+            return JsonResponse({"success": True})
+        except SolicitudReserva.DoesNotExist:
+            return JsonResponse({"success": False, "error": "No existe"}, status=404)
+    return JsonResponse({"success": False, "error": "Método no permitido"}, status=405)
 # Create your views here.
 
 #@user_passes_test(es_empleado)
 def validarSolicitudReservaView(request):
     # Mostrar solo solicitudes pendientes
-    solicitudes = SolicitudReserva.objects.filter(estado='pendiente')
+    solicitudes = SolicitudReserva.objects.filter(estado='pendiente', fecha_inicio__gt= timezone.now().date()).order_by('fecha_inicio')
 
     if request.method == 'POST':
         solicitud_id = request.POST.get('solicitud_id')
@@ -124,10 +123,10 @@ def validarSolicitudReservaView(request):
 
     return render(request, 'validar_solicitud_reserva.html', {'solicitudes': solicitudes})
 
-def verSolicitudesPendientesView(request):
+def verSolicitudesPendientesView(request, inquilino_id):
     # Mostrar solo solicitudes pendientes
     solicitudes = SolicitudReserva.objects.filter(estado='pendiente')
-    inquilino = Usuario.objects.get(id=1)
+    inquilino = Usuario.objects.get(id=inquilino_id)
     solicitudesInquilino = solicitudes.filter(inquilino=inquilino)
     return render(request, 'ver_solicitudes_pendientes.html', {'solicitudes': solicitudesInquilino})
 
