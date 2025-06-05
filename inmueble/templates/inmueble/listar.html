@@ -1,7 +1,20 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>Lista de Inmuebles</h1>
+    <div style="margin-top: 5rem;">
+        {% if request.GET.reserva == "ok" %}
+            <div id="reserva-exito" style="background: #28a745; color: white; padding: 1em; margin-bottom: 1em; border-radius: 5px; text-align: center;">
+            ¡Reserva realizada con éxito!
+            </div>
+            <script>
+            setTimeout(function() {
+                var alerta = document.getElementById('reserva-exito');
+                if (alerta) alerta.style.display = 'none';
+                }, 3000); // Oculta el mensaje después de 3 segundos
+            </script>
+        {% endif %}
+        <h1>Lista de Inmuebles</h1>
+    </div>
     {% if user.is_authenticated and user.rol == "empleado" or user.rol == "admin" %}
         <a href="{% url 'alta_inmueble' %}" style="
         display: inline-block;
