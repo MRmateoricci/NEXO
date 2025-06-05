@@ -106,7 +106,8 @@ def dar_alta_inmueble(request):
 def eliminar_inmueble(request, id):
     inmueble = get_object_or_404(Inmueble, pk=id)    
     if request.method == 'POST':
-        inmueble.delete()
+        inmueble.estado = 'no disponible'
+        inmueble.save()
         return redirect('listar_inmuebles')
     return render(request, 'inmueble/confirmar_baja.html',{'inmueble': inmueble})
 
