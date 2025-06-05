@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Verificación 2FA{% endblock %}
+
+{% block content %}
+<div style="max-width: 500px; margin: auto;">
+    <h2 class="mb-4">Ingrese el código enviado a su correo</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Verificar</button>
+    </form>
+</div>
+{% endblock %}

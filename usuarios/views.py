@@ -1,44 +1,126 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, views as auth_views
 from django.contrib import messages
-from .forms import RegistroForm, LoginForm, EditarUsuarioForm
+from .forms import RegistroForm, LoginForm, EditarUsuarioForm, Codigo2FAForm
 from .models import Usuario
 from inmueble.models import Inmueble
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
+from django import forms
+from django.core.mail import send_mail
+from django.utils.crypto import get_random_string
+
 
 def registro(request):
-    if request.method == 'POST':
-        form = RegistroForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Registro exitoso. Ahora puedes iniciar sesión.")
-            return redirect('login')
+    if request.user.is_authenticated:
+        if request.user.rol == 'admin':
+            # Admin puede registrar con cualquier rol
+            if request.method == 'POST':
+                form = RegistroForm(request.POST)
+                if form.is_valid():
+                    form.save()
+                    messages.success(request, "Usuario registrado exitosamente.")
+                    return redirect('home')
+                else:
+                    messages.error(request, "Error en el registro.")
+            else:
+                form = RegistroForm()
+
+        elif request.user.rol == 'empleado':
+            # Empleado solo puede registrar inquilinos
+            if request.method == 'POST':
+                form = RegistroForm(request.POST)
+                if form.is_valid():
+                    usuario = form.save(commit=False)
+                    usuario.rol = 'inquilino'  # forzar rol
+                    usuario.save()
+                    messages.success(request, "Usuario inquilino registrado exitosamente.")
+                    return redirect('home')
+                else:
+                    messages.error(request, "Error en el registro.")
+            else:
+                form = RegistroForm()
+                form.fields['rol'].initial = 'inquilino'
+                form.fields['rol'].widget = forms.HiddenInput()
         else:
-            messages.error(request, "Error en el registro. Por favor, corrige los errores.")
-            for field in form:
-                for error in field.errors:
-                    messages.error(request, f"{field.label}: {error}")
+            # Usuario autenticado sin permisos
+            messages.error(request, "No tienes permiso para registrar nuevos usuarios.")
+            return redirect('home')
 
     else:
-        form = RegistroForm()
+        # Usuario no autenticado: solo se puede registrar como inquilino
+        if request.method == 'POST':
+            form = RegistroForm(request.POST)
+            if form.is_valid():
+                usuario = form.save(commit=False)
+                usuario.rol = 'inquilino'
+                usuario.save()
+                messages.success(request, "Registro exitoso. Ahora puedes iniciar sesión.")
+                return redirect('login')
+            else:
+                messages.error(request, "Error en el registro.")
+        else:
+            form = RegistroForm()
+            form.fields['rol'].initial = 'inquilino'
+            form.fields['rol'].widget = forms.HiddenInput()
+
     return render(request, 'usuarios/registro.html', {'form': form})
 
 def login_view(request):
     if request.user.is_authenticated:
-        return redirect('home')  # Redirigir si ya está autenticado
+        return redirect('home')
+
     if request.method == 'POST':
         form = LoginForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
-            if user.is_active:
-                login(request, user)
-                return redirect('home')
+            if user.rol == 'admin':
+                codigo = get_random_string(length=6, allowed_chars='0123456789')
+                request.session['codigo_2fa'] = codigo
+                request.session['usuario_2fa_id'] = user.id
+
+                send_mail(
+                    'Código de verificación 2FA',
+                    f'Tu código es: {codigo}',
+                    'no-reply@tusitio.com',
+                    [user.email],
+                )
+                return redirect('verificar_2fa')
+
+            login(request, user)
+            return redirect('home')
         else:
-            messages.error(request, "Email o contraseña incorrectos")
+            messages.error(request, "Usuario o contraseña incorrectos.")
     else:
         form = LoginForm()
+
     return render(request, 'usuarios/login.html', {'form': form})
+
+def verificar_2fa(request):
+    if 'usuario_2fa_id' not in request.session:
+        return redirect('login')
+
+    if request.method == 'POST':
+        form = Codigo2FAForm(request.POST)
+        if form.is_valid():
+            codigo_ingresado = form.cleaned_data['codigo']
+            codigo_guardado = request.session.get('codigo_2fa')
+
+            if codigo_ingresado == codigo_guardado:
+                user_id = request.session.get('usuario_2fa_id')
+                user = Usuario.objects.get(id=user_id)
+                login(request, user)
+
+                del request.session['codigo_2fa']
+                del request.session['usuario_2fa_id']
+
+                return redirect('home')
+            else:
+                messages.error(request, "Código incorrecto.")
+    else:
+        form = Codigo2FAForm()
+
+    return render(request, 'usuarios/verificar_2fa.html', {'form': form})
 
 def logout_view(request):
     logout(request)
