@@ -82,7 +82,7 @@ def crearReservaView(request, inmueble_id):
 
             return JsonResponse({
                 'success': True,
-                'redirect_url': '/inmueble/listar'  # URL a la que redirigir
+                'redirect_url': '/inmueble/listar?reserva=ok'  # URL a la que redirigir
             })
 
         except Exception as e:
