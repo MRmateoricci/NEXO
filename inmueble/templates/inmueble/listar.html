@@ -15,17 +15,19 @@
         {% endif %}
         <h1>Lista de Inmuebles</h1>
     </div>
-    {% if user.is_authenticated and user.rol == "empleado" or user.rol == "admin" %}
-        <a href="{% url 'alta_inmueble' %}" style="
-        display: inline-block;
-        background-color: gainsboro;
-        color: black;
-        padding: 10px 15px;
-        text-decoration: none;
-        border-radius: 5px;
-        font-weight: bold;
-        margin-bottom: 20px;
-        "> Dar de Alta Inmueble</a>
+    {% if user.is_authenticated %}
+        {% if user.rol == "empleado" or user.rol == "admin" %}
+            <a href="{% url 'alta_inmueble' %}" style="
+            display: inline-block;
+            background-color: gainsboro;
+            color: black;
+            padding: 10px 15px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            "> Dar de Alta Inmueble</a>
+        {% endif %}
     {% endif %}
     {% load custom_filters %}
 
