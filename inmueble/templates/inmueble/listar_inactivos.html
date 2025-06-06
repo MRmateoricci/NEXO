@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>Inmuebles dados de baja</h2>
+
+  {% if page_obj.object_list %}
+    <ul style="list-style: none; padding: 0;">
+      {% for inmueble in page_obj.object_list %}
+        <li style="margin-bottom: 1.5em; border-bottom: 1px solid #ccc; padding-bottom: 1em;">
+          
+          {# ----- Línea 1: Nombre o dirección ----- #}
+          <strong>{{ inmueble.titulo }}</strong>
+          <br>
+
+          {# ----- Línea 2: Fechas de baja ----- #}
+          Desde: 
+          {% if inmueble.fecha_inicio_inactividad %}
+            {{ inmueble.fecha_inicio_inactividad|date:"d/m/Y" }}
+          {% else %}
+            –
+          {% endif %}
+            |  Hasta:
+          {% if inmueble.fecha_fin_inactividad %}
+            {{ inmueble.fecha_fin_inactividad|date:"d/m/Y" }}
+          {% else %}
+            –
+          {% endif %}
+          <br>
+
+          {# ----- Línea 3: Botón Reactivar ----- #}
+          <form action="{% url 'activar_inmueble' inmueble.id %}" method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit">Reactivar</button>
+          </form>
+
+        </li>
+      {% endfor %}
+    </ul>
+
+    {# ----- Paginación ----- #}
+    <div class="pagination" style="margin-top: 1em;">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}">« Anterior</a>
+      {% endif %}
+      <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">Siguiente »</a>
+      {% endif %}
+    </div>
+  {% else %}
+    <p>No hay inmuebles dados de baja.</p>
+  {% endif %}
+
+  <p style="margin-top: 2em;">
+    <a href="{% url 'listar_inmuebles' %}">← Volver a inmuebles activos</a>
+  </p>
+{% endblock %}

@@ -13,7 +13,10 @@ class Inmueble(models.Model):
     provincia = models.CharField(max_length=50)
     pais = models.CharField(max_length=50)
     estado = models.CharField(max_length=50, choices=[('Disponible', 'Disponible'), ('Reservado', 'Reservado'), ('no disponible', 'No disponible')])
+    activo = models.BooleanField(default=True)
     precio_diario = models.DecimalField(max_digits=10, decimal_places=2)
+    fecha_inicio_inactividad = models.DateField(null=True,blank=True,)
+    fecha_fin_inactividad = models.DateField(null=True,blank=True,)
 # Create your models here.
     def __str__(self):
         return f"{self.titulo} - {self.tipo}"

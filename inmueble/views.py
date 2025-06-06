@@ -5,12 +5,12 @@ from django.core.paginator import Paginator
 
 def listar_inmuebles(request):
     # Parámetros GET (con valores por defecto y sanitización)
+    filters = Q(activo=True)
     tipo = request.GET.get('tipo', '').strip()
     huespedes = request.GET.get('huespedes', '').strip()
     metros = request.GET.get('metros', '').strip()
 
     # Filtrado
-    filters = Q()
     if tipo:
         filters &= Q(tipo__iexact=tipo)
     if huespedes:
@@ -107,6 +107,7 @@ def eliminar_inmueble(request, id):
     inmueble = get_object_or_404(Inmueble, pk=id)    
     if request.method == 'POST':
         inmueble.estado = 'no disponible'
+        inmueble.activo = False
         inmueble.save()
         return redirect('listar_inmuebles')
     return render(request, 'inmueble/confirmar_baja.html',{'inmueble': inmueble})
@@ -123,3 +124,50 @@ def editar_inmueble(request, id):
     else:
         form = EditarInmueble(instance=inmueble)
     return render(request, 'inmueble/editar.html',{'form': form})
+
+def listar_inmuebles_inactivos(request):
+    inmuebles_inactivos = Inmueble.objects.filter(activo=False)
+    
+    # Paginación (igual que en listar activos, pero con el queryset inactivo)
+    paginator = Paginator(inmuebles_inactivos, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, 'inmueble/listar_inactivos.html', {
+        'page_obj': page_obj,
+    })
+
+def activar_inmueble(request, id):
+    inmueble = get_object_or_404(Inmueble, pk=id)
+    
+    if request.method == 'POST':
+        inmueble.activo = True
+        inmueble.estado = 'Disponible'
+        # Si usas campo 'estado', podrías volver a setearlo:
+        # inmueble.estado = 'activo'
+        inmueble.save()
+        return redirect('listar_inmuebles_inactivos')
+    
+    return render(request, 'inmueble/confirmar_activacion.html', {
+        'inmueble': inmueble
+    })
+
+from .forms import CambioEstadoForm
+
+def cambiar_estado_inmueble(request, id):
+    inmueble = get_object_or_404(Inmueble, pk=id) 
+    if request.method == 'POST':
+        form = CambioEstadoForm(request.POST, instance=inmueble)
+        if form.is_valid():
+            inmueble = form.save(commit=False)
+            inmueble.activo = False
+            inmueble.estado = 'no disponible'
+            inmueble.save()
+            return redirect('listar_inmuebles')  
+    else:
+        form = CambioEstadoForm(instance=inmueble)
+    
+    return render(request, 'inmueble/cambiar_estado.html', {
+        'form': form,
+        'inmueble': inmueble,
+    })
