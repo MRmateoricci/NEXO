@@ -17,6 +17,10 @@ class CambioEstadoForm(forms.ModelForm):
     class Meta:
         model = Inmueble
         fields = ['fecha_inicio_inactividad', 'fecha_fin_inactividad']
+        labels = {
+            'fecha_inicio_inactividad': 'Fecha inicio mantenimiento',
+            'fecha_fin_inactividad': 'Fecha fin mantenimiento'
+        }
         widgets = {
             'fecha_inicio_inactividad': forms.DateInput(attrs={'type': 'date'}),
             'fecha_fin_inactividad':     forms.DateInput(attrs={'type': 'date'}),

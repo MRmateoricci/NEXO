@@ -1,10 +1,9 @@
 {% extends 'base.html' %}
 {% block content%}
-  <h1>Alta de un Inmueble</h1>
-
-  <form method="POST">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Guardar</button>
-  </form>
+<h1>Alta de un Inmueble</h1>
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Dar de Alta Inmueble</button>
+</form>
 {% endblock %}

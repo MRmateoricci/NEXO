@@ -145,8 +145,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'sandbox.smtp.mailtrap.io'  # Cambia si Mailtrap te da otro
-EMAIL_HOST_USER = 'c54cb603a0a32a'       # Lo que te dé Mailtrap
-EMAIL_HOST_PASSWORD = '07662b3490dd66'   # Lo que te dé Mailtrap
+EMAIL_HOST_USER = '31e2346cb94afc'       # Lo que te dé Mailtrap
+EMAIL_HOST_PASSWORD = '361ad853d1f666'   # Lo que te dé Mailtrap
 EMAIL_PORT = 2525
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = 'no-reply@nexo.com'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
