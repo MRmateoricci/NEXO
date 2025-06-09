@@ -15,6 +15,10 @@ class RegistroForm(UserCreationForm):
 class LoginForm(AuthenticationForm):
     username = forms.CharField(label='Usuario o Email')
 
+
+class Codigo2FAForm(forms.Form):
+    codigo = forms.CharField(label='Código de verificación', max_length=6)
+
 class EditarUsuarioForm(forms.ModelForm):
     class Meta:
         model = Usuario
@@ -23,7 +27,7 @@ class EditarUsuarioForm(forms.ModelForm):
             'username': forms.TextInput(attrs={'readonly': 'readonly'}),
             'email': forms.EmailInput(attrs={'readonly': 'readonly'}),
             'dni': forms.TextInput(attrs={'readonly': 'readonly'}),
-            'rol': forms.Select(attrs={'readonly': 'readonly'}),
+            'rol': forms.Select(attrs={'disabled': 'disabled'}),
         }
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

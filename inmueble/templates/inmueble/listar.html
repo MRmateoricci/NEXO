@@ -15,17 +15,29 @@
         {% endif %}
         <h1>Lista de Inmuebles</h1>
     </div>
-    {% if user.is_authenticated and user.rol == "empleado" or user.rol == "admin" %}
-        <a href="{% url 'alta_inmueble' %}" style="
-        display: inline-block;
-        background-color: gainsboro;
-        color: black;
-        padding: 10px 15px;
-        text-decoration: none;
-        border-radius: 5px;
-        font-weight: bold;
-        margin-bottom: 20px;
-        "> Dar de Alta Inmueble</a>
+    {% if user.is_authenticated %}
+        {% if user.rol == "empleado" or user.rol == "admin" %}
+            <a href="{% url 'alta_inmueble' %}" style="
+            display: inline-block;
+            background-color: gainsboro;
+            color: black;
+            padding: 10px 15px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            "> Dar de Alta Inmueble</a>
+            <a href="{% url 'listar_inmuebles_inactivos' %}" style="
+            display: inline-block;
+            background-color: gainsboro;
+            color: black;
+            padding: 10px 15px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            "> Ver inmuebles dados de baja</a>
+        {% endif %}
     {% endif %}
     {% load custom_filters %}
 
@@ -72,6 +84,7 @@
             {% endif %}
             {% if user.is_authenticated and user.rol == "admin" or user.rol == "empleado" %}
                 <a href="{% url 'editar_inmueble' id=inmueble.id %}" class="btn btn-warning">Editar</a>
+                <a href="{% url 'cambiar_estado_inmueble' inmueble.id %}" class="btn btn-warning">Cambiar estado</a> 
                 <a href="{% url 'eliminar_inmueble' id=inmueble.id %}" style="color: red;">Eliminar</a>
             {% endif %}
         {% endfor %}

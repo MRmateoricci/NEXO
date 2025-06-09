@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>Cambiar estado: {{ inmueble.direccion }}</h2>
+  
+  <form method="post">
+    {% csrf_token %}
+    <div>
+      {{ form.fecha_inicio_inactividad.label_tag }}<br>
+      {{ form.fecha_inicio_inactividad }}
+      {% if form.fecha_inicio_inactividad.errors %}
+        <div class="error">{{ form.fecha_inicio_inactividad.errors }}</div>
+      {% endif %}
+    </div>
+
+    <div>
+      {{ form.fecha_fin_inactividad.label_tag }}<br>
+      {{ form.fecha_fin_inactividad }}
+      {% if form.fecha_fin_inactividad.errors %}
+        <div class="error">{{ form.fecha_fin_inactividad.errors }}</div>
+      {% endif %}
+    </div>
+    
+    {% if form.non_field_errors %}
+      <div class="error">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <button type="submit">Guardar cambio de estado</button>
+    <a href="{% url 'listar_inmuebles' %}">Cancelar</a>
+  </form>
+{% endblock %}

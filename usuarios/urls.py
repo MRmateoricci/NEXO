@@ -7,6 +7,7 @@ from .views import PasswordReset, PasswordResetDone, PasswordResetConfirm, Passw
 urlpatterns = [
     path('registro/', views.registro, name='registro'),
     path('login/', views.login_view, name='login'),
+    path('verificar-2fa/', views.verificar_2fa, name='verificar_2fa'),
     path('logout/', views.logout_view, name='logout'),
     path('editar/', views.editar_usuario, name='editar_usuario'),
     path('', views.home, name='home'),
