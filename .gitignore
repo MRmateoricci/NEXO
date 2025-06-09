@@ -3,6 +3,7 @@
 __pycache__/
 **/__pycache__/
 *.py[cod]
+.pyc
 
 # Archivos de base de datos locales
 *.sqlite3
