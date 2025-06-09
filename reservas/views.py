@@ -28,6 +28,13 @@ def crearReservaView(request, inmueble_id):
         for r in reservas
     ]
 
+    if inmueble.fecha_inicio_inactividad and inmueble.fecha_fin_inactividad:
+        fechas_ocupadas.append({
+            'fecha_inicio': inmueble.fecha_inicio_inactividad.strftime('%Y-%m-%d'),
+            'fecha_fin'   : inmueble.fecha_fin_inactividad.strftime('%Y-%m-%d'),
+        })
+
+
     if request.method == 'POST':
         fecha_inicio = request.POST.get('fecha_inicio')
         fecha_fin = request.POST.get('fecha_fin')
