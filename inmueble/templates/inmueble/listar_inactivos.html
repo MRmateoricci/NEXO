@@ -7,26 +7,10 @@
       {% for inmueble in page_obj.object_list %}
         <li style="margin-bottom: 1.5em; border-bottom: 1px solid #ccc; padding-bottom: 1em;">
           
-          {# ----- Línea 1: Nombre o dirección ----- #}
-          <strong>{{ inmueble.titulo }}</strong>
-          <br>
+          <strong>{{ inmueble.titulo }}</strong><br>
+          <h10>Tipo: {{ inmueble.tipo }}</h10><br>
+          <h10>Ciudad: {{ inmueble.ciudad }}</h10><br>
 
-          {# ----- Línea 2: Fechas de baja ----- #}
-          Desde: 
-          {% if inmueble.fecha_inicio_inactividad %}
-            {{ inmueble.fecha_inicio_inactividad|date:"d/m/Y" }}
-          {% else %}
-            –
-          {% endif %}
-            |  Hasta:
-          {% if inmueble.fecha_fin_inactividad %}
-            {{ inmueble.fecha_fin_inactividad|date:"d/m/Y" }}
-          {% else %}
-            –
-          {% endif %}
-          <br>
-
-          {# ----- Línea 3: Botón Reactivar ----- #}
           <form action="{% url 'activar_inmueble' inmueble.id %}" method="post" style="display:inline;">
             {% csrf_token %}
             <button type="submit">Reactivar</button>
