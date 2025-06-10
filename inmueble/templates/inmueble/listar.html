@@ -1,112 +1,155 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <div style="margin-top: 5rem;">
-        {% if request.GET.reserva == "ok" %}
-            <div id="reserva-exito" style="background: #28a745; color: white; padding: 1em; margin-bottom: 1em; border-radius: 5px; text-align: center;">
-            ¡Reserva realizada con éxito!
-            </div>
-            <script>
-            setTimeout(function() {
-                var alerta = document.getElementById('reserva-exito');
-                if (alerta) alerta.style.display = 'none';
-                }, 3000); // Oculta el mensaje después de 3 segundos
-            </script>
-        {% endif %}
-        <h1>Lista de Inmuebles</h1>
-    </div>
-    {% if user.is_authenticated %}
-        {% if user.rol == "empleado" or user.rol == "admin" %}
-            <a href="{% url 'alta_inmueble' %}" style="
-            display: inline-block;
-            background-color: gainsboro;
-            color: black;
-            padding: 10px 15px;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            "> Dar de Alta Inmueble</a>
-            <a href="{% url 'listar_inmuebles_inactivos' %}" style="
-            display: inline-block;
-            background-color: gainsboro;
-            color: black;
-            padding: 10px 15px;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-            margin-bottom: 20px;
-            "> Ver inmuebles dados de baja</a>
-        {% endif %}
+
+<style>
+.inmueble-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .inmueble-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-right: 1rem;
+  }
+  .inmueble-image {
+    flex: 0 0 40%;
+    box-sizing: border-box;
+  }
+  .inmueble-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .inmueble-actions {
+    margin-top: 0.75rem;
+    font-size: 0.9em;
+  }
+</style>
+
+
+<div style="margin-top: 5rem;">
+    {% if request.GET.reserva == "ok" %}
+        <div id="reserva-exito" style="background: #28a745; color: white; padding: 1em; margin-bottom: 1em; border-radius: 5px; text-align: center;">
+        ¡Reserva realizada con éxito!
+        </div>
+        <script>
+        setTimeout(function() {
+            var alerta = document.getElementById('reserva-exito');
+            if (alerta) alerta.style.display = 'none';
+            }, 3000); // Oculta el mensaje después de 3 segundos
+        </script>
     {% endif %}
-    {% load custom_filters %}
+    <h1>Lista de Inmuebles</h1>
+</div>
+{% if user.is_authenticated %}
+    {% if user.rol == "empleado" or user.rol == "admin" %}
+        <a href="{% url 'alta_inmueble' %}" style="
+        display: inline-block;
+        background-color: gainsboro;
+        color: black;
+        padding: 10px 15px;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        "> Dar de Alta Inmueble</a>
+        <a href="{% url 'listar_inmuebles_inactivos' %}" style="
+        display: inline-block;
+        background-color: gainsboro;
+        color: black;
+        padding: 10px 15px;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        "> Ver inmuebles dados de baja</a>
+    {% endif %}
+{% endif %}
+{% load custom_filters %}
 
-    <form method="get">
-        <!-- Filtro de Tipo -->
-        <label for="tipo">Tipo:</label>
-        <select name="tipo" id="tipo">
-            <option value="">Todos</option>
-            {% for value, label in tipo_choices %}
-            <option value="{{ value }}" {% if tipo|equals:value %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-        </select>
-
-        <!-- Filtro de Huéspedes -->
-        <label for="huespedes">Cantidad mínima de huéspedes:</label>
-        <input type="number" name="huespedes" id="huespedes" min="1" value="{{ huespedes|default:'' }}">
-
-        <!-- Filtro de Metros -->
-        <label for="metros">Metros cuadrados mínimos:</label>
-        <input type="number" name="metros" id="metros" min="1" step="0.01" value="{{ metros|default:'' }}">
-
-        <button type="submit">Filtrar</button>
-        <a href="{% url 'listar_inmuebles' %}" class="btn btn-secondary">Limpiar filtros</a>
-    </form>
-
-    <hr>
-
-    {% if page_obj %}
-    <div class ="grid-containter">
-        {% for inmueble in page_obj %}
-            <div class="tarjeta">
-            <h3>{{ inmueble.titulo }}</h3>
-            <p><strong>Tipo:</strong> {{ inmueble.tipo }}</p>
-            <p><strong>Ciudad:</strong> {{ inmueble.ciudad }}</p>
-            <p><strong>Precio:</strong> ${{ inmueble.precio_diario }}</p>
-            <p><strong>Estado:</strong> {{ inmueble.estado }}</p>
-            </div>
-            <a href="{% url 'ver_disponibilidad' inmueble_id=inmueble.id %}" class="btn btn-primary">Fechas Disponibles</a>
-            <a href="{% url 'ver_detalle_inmueble' inmueble_id=inmueble.id %}" class="btn btn-info">Ver Detalle</a>
-            {% if user.is_authenticated %}
-                <a href="{% url 'crear_reserva' inmueble_id=inmueble.id %}" class="btn btn-warning">Reservar</a>
-            {% else %}
-                <a href="{% url 'login' %}?next={% url 'crear_reserva' inmueble_id=inmueble.id %}" class="btn btn-warning">Reservar</a>
-            {% endif %}
-            {% if user.is_authenticated and user.rol == "admin" or user.rol == "empleado" %}
-                <a href="{% url 'editar_inmueble' id=inmueble.id %}" class="btn btn-warning">Editar</a>
-                <a href="{% url 'cambiar_estado_inmueble' inmueble.id %}" class="btn btn-warning">Cambiar estado</a> 
-                <a href="{% url 'eliminar_inmueble' id=inmueble.id %}" style="color: red;">Eliminar</a>
-            {% endif %}
+<form method="get">
+    <!-- Filtro de Tipo -->
+    <label for="tipo">Tipo:</label>
+    <select name="tipo" id="tipo">
+        <option value="">Todos</option>
+        {% for value, label in tipo_choices %}
+          <option value="{{ value }}" {% if tipo == value %}selected{% endif %}>{{ label }}</option>
         {% endfor %}
-    <!-- Paginación -->
-    <div class="pagination">
-        <span>
-            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
-        </span>
+    </select>
 
-        {% if page_obj.has_previous %}
-        <a
-            href="?{% if tipo %}tipo={{ tipo }}&{% endif %}{% if huespedes %}huespedes={{ huespedes }}&{% endif %}{% if metros %}metros={{ metros }}&{% endif %}page={{ page_obj.previous_page_number }}">Anterior</a>
-        {% endif %}
+    <!-- Filtro de Huéspedes -->
+    <label for="huespedes">Cantidad mínima de huéspedes:</label>
+    <input type="number" name="huespedes" id="huespedes" min="1" value="{{ huespedes|default:'' }}">
 
-        {% if page_obj.has_next %}
-        <a
-            href="?{% if tipo %}tipo={{ tipo }}&{% endif %}{% if huespedes %}huespedes={{ huespedes }}&{% endif %}{% if metros %}metros={{ metros }}&{% endif %}page={{ page_obj.next_page_number }}">Siguiente</a>
-        {% endif %}
+    <!-- Filtro de Metros -->
+    <label for="metros">Metros cuadrados mínimos:</label>
+    <input type="number" name="metros" id="metros" min="1" step="0.01" value="{{ metros|default:'' }}">
+
+    <button type="submit">Filtrar</button>
+    <a href="{% url 'listar_inmuebles' %}" class="btn btn-secondary">Limpiar filtros</a>
+</form>
+
+<hr>
+
+{# Si no hay ningún resultado tras el filtrado… #}
+{% if page_obj.paginator.count == 0 %}
+  {% if tipo or huespedes or metros %}
+    <p><em>No hay inmuebles que cumplan el filtrado.</em></p>
+  {% else %}
+    <p><strong>Aún no hay inmuebles cargados.</strong></p>
+  {% endif %}
+
+{# Si sí hay resultados, los listamos y paginamos #}
+{% else %}
+
+  {% for inmueble in page_obj %}
+    <div class="inmueble-item">
+      <div class="inmueble-info">
+        <h3>{{ inmueble.titulo }}</h3>
+        <p><strong>Tipo:</strong> {{ inmueble.tipo }}</p>
+        <p><strong>Ciudad:</strong> {{ inmueble.ciudad }}</p>
+        <p><strong>Precio:</strong> ${{ inmueble.precio_diario }}</p>
+        <p><strong>Estado:</strong> {{ inmueble.estado }}</p>
+        <p class="inmueble-actions">
+          <a href="{% url 'ver_detalle_inmueble' inmueble_id=inmueble.id %}">Ver Detalle</a>
+          {% if user.is_authenticated %}
+            | <a href="{% url 'crear_reserva' inmueble_id=inmueble.id %}">Reservar</a>
+          {% else %}
+            | <a href="{% url 'login' %}?next={% url 'crear_reserva' inmueble_id=inmueble.id %}">Reservar</a>
+          {% endif %}
+          {% if user.is_authenticated and user.rol == "admin" or user.rol == "empleado" %}
+            | <a href="{% url 'editar_inmueble' id=inmueble.id %}">Editar</a>
+            | <a href="{% url 'cambiar_estado_inmueble' inmueble.id %}">Mantenimiento</a>
+            | <a href="{% url 'eliminar_inmueble' id=inmueble.id %}" style="color:red;">Eliminar</a>
+          {% endif %}
+        </p>
+      </div>
+
+      {% if inmueble.foto %}
+        <div class="inmueble-image">
+          <img src="{{ inmueble.foto.url }}" alt="Foto de {{ inmueble.titulo }}">
+        </div>
+      {% endif %}
+
+      <div class="clearfix"></div>
     </div>
+  {% endfor %}
 
-    {% else %}
-    <h3>Aún no hay inmuebles cargados.</h3>
+  <div class="pagination">
+    <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_previous %}
+      <a href="?{% if tipo %}tipo={{ tipo }}&{% endif %}{% if huespedes %}huespedes={{ huespedes }}&{% endif %}{% if metros %}metros={{ metros }}&{% endif %}page={{ page_obj.previous_page_number }}">Anterior</a>
     {% endif %}
-    </div>
+    {% if page_obj.has_next %}
+      <a href="?{% if tipo %}tipo={{ tipo }}&{% endif %}{% if huespedes %}huespedes={{ huespedes }}&{% endif %}{% if metros %}metros={{ metros }}&{% endif %}page={{ page_obj.next_page_number }}">Siguiente</a>
+    {% endif %}
+  </div>
+
+{% endif %}
 {% endblock %}

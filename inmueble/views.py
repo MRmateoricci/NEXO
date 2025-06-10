@@ -95,7 +95,7 @@ from .forms import AltaInmueble
 
 def dar_alta_inmueble(request):
     if request.method == 'POST':
-        formulario = AltaInmueble(request.POST)
+        formulario = AltaInmueble(request.POST, request.FILES)
         if formulario.is_valid():
             formulario.save()
             return redirect('listar_inmuebles')
@@ -117,7 +117,7 @@ from .forms import EditarInmueble
 def editar_inmueble(request, id):
     inmueble = get_object_or_404(Inmueble,pk=id)
     if request.method == "POST":
-        form = EditarInmueble(request.POST, instance=inmueble)
+        form = EditarInmueble(request.POST, request.FILES, instance=inmueble)
         if form.is_valid():
             form.save()
             return redirect('listar_inmuebles')
@@ -160,8 +160,6 @@ def cambiar_estado_inmueble(request, id):
         form = CambioEstadoForm(request.POST, instance=inmueble)
         if form.is_valid():
             inmueble = form.save(commit=False)
-            inmueble.activo = False
-            inmueble.estado = 'no disponible'
             inmueble.save()
             return redirect('listar_inmuebles')  
     else:
