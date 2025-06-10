@@ -22,10 +22,13 @@
             <td>{{ usuario.email }}</td>
             <td>{{ usuario.date_joined|date:"Y-m-d" }}</td>
             <td>
-                {% if usuario.is_active %}
-                    <a href="{% url 'deshabilitar_usuario' usuario.id %}">Deshabilitar</a>
-                {% else %}
-                    <a href="{% url 'habilitar_usuario' usuario.id %}">Habilitar</a>
+                {% if user.rol == 'admin' %}
+                    
+                    {% if usuario.is_active %}
+                        <a href="{% url 'deshabilitar_usuario' usuario.id %}">Deshabilitar</a>
+                    {% else %}
+                        <a href="{% url 'habilitar_usuario' usuario.id %}">Habilitar</a>
+                    {% endif %}
                 {% endif %}
             </td>
         </tr>

@@ -113,8 +113,8 @@ def verificar_2fa(request):
                 user = Usuario.objects.get(id=user_id)
                 login(request, user)
 
-                del request.session['codigo_2fa']
-                del request.session['usuario_2fa_id']
+                request.session.pop('codigo_2fa', None)
+                request.session.pop('usuario_2fa_id', None)
 
                 return redirect('home')
             else:

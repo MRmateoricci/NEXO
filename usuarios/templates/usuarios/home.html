@@ -80,20 +80,8 @@
     <h1 class="titulo">Alquiler Express</h1>
     <p class="frase">Tu próximo hogar te está esperando. Alquilá fácil, rápido y seguro.</p>
 
-    <div class="inmuebles">
-        {% for inmueble in inmuebles|slice:":4" %}
-            <div class="card">
-                <h5>{{ inmueble.titulo }}</h5>
-                <p>{{ inmueble.descripcion|truncatechars:100 }}</p>
-                <a href="{% url 'ver_detalle_inmueble' inmueble.id %}" class="btn-ver">Ver más</a>
-            </div>
-        {% empty %}
-            <p>No hay inmuebles disponibles.</p>
-        {% endfor %}
-    </div>
-
     <div class="ver-todos">
-        <a href="{% url 'listar_inmuebles' %}">Ver todos los inmuebles →</a>
+        <a href="{% url 'listar_inmuebles' %}">Inmuebles→</a>
     </div>
 
     {% if user.is_authenticated %}

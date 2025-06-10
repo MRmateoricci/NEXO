@@ -23,7 +23,7 @@
     <nav style="background-color: #282929; position: fixed; color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; width: 100%; height: 60px; z-index: 1000;">
         <div class="logo" style="display: flex; align-items: center;">
             <img src="{% static 'img/logo.png' %}" alt="Logo" style="height: 60px; width: auto;">
-            <a href="{% url 'home' %}" style="color: #ff571b; font-weight: bold; text-decoration: none;">Alquiler Express</a>
+            <p style="color: #ff571b; font-weight: bold; text-decoration: none;">Alquiler Express</p>
         </div>
         <div class="nav-links">
             {% if user.is_authenticated %}
