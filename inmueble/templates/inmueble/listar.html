@@ -75,7 +75,6 @@
             <p><strong>Precio:</strong> ${{ inmueble.precio_diario }}</p>
             <p><strong>Estado:</strong> {{ inmueble.estado }}</p>
             </div>
-            <a href="{% url 'ver_disponibilidad' inmueble_id=inmueble.id %}" class="btn btn-primary">Fechas Disponibles</a>
             <a href="{% url 'ver_detalle_inmueble' inmueble_id=inmueble.id %}" class="btn btn-info">Ver Detalle</a>
             {% if user.is_authenticated %}
                 <a href="{% url 'crear_reserva' inmueble_id=inmueble.id %}" class="btn btn-warning">Reservar</a>

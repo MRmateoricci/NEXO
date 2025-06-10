@@ -101,20 +101,7 @@ AUTH_USER_MODEL = 'usuarios.Usuario'
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
+
 
 
 # Internationalization
@@ -150,3 +137,5 @@ EMAIL_HOST_PASSWORD = '07662b3490dd66'   # Lo que te dé Mailtrap
 EMAIL_PORT = 2525
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = 'no-reply@nexo.com'
+
+

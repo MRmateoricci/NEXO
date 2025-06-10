@@ -22,7 +22,8 @@ def registro(request):
                     messages.success(request, "Usuario registrado exitosamente.")
                     return redirect('home')
                 else:
-                    messages.error(request, "Error en el registro.")
+                    messages.error(request, "Error en el registro. Verifique los datos ingresados.")
+                    exit
             else:
                 form = RegistroForm()
 
@@ -37,7 +38,8 @@ def registro(request):
                     messages.success(request, "Usuario inquilino registrado exitosamente.")
                     return redirect('home')
                 else:
-                    messages.error(request, "Error en el registro.")
+                    messages.error(request, "Error en el registro. Verifique los datos ingresados.")
+                    return redirect('registro')
             else:
                 form = RegistroForm()
                 form.fields['rol'].initial = 'inquilino'
@@ -58,7 +60,7 @@ def registro(request):
                 messages.success(request, "Registro exitoso. Ahora puedes iniciar sesión.")
                 return redirect('login')
             else:
-                messages.error(request, "Error en el registro.")
+                messages.error(request, "Error en el registro. Verifique los datos ingresados.")
         else:
             form = RegistroForm()
             form.fields['rol'].initial = 'inquilino'
