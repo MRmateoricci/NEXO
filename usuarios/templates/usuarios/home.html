@@ -81,20 +81,19 @@
     <p class="frase">Tu próximo hogar te está esperando. Alquilá fácil, rápido y seguro.</p>
 
     <div class="inmuebles">
-        {% for inmueble in inmuebles|slice:":4" %}
+        {% for inmueble in inmuebles|slice:":3" %}
             <div class="card">
-                <h5>{{ inmueble.titulo }}</h5>
-                <p>{{ inmueble.descripcion|truncatechars:100 }}</p>
-                <a href="{% url 'ver_detalle_inmueble' inmueble.id %}" class="btn-ver">Ver más</a>
+                {% if inmueble.activo %}
+                    <h5>{{ inmueble.titulo }}</h5>
+                    <p>{{ inmueble.descripcion|truncatechars:100 }}</p>
+                    <a href="{% url 'ver_detalle_inmueble' inmueble.id %}" class="btn-ver">Ver más</a>
+                {% endif %}    
             </div>
         {% empty %}
             <p>No hay inmuebles disponibles.</p>
         {% endfor %}
     </div>
 
-    <div class="ver-todos">
-        <a href="{% url 'listar_inmuebles' %}">Ver todos los inmuebles →</a>
-    </div>
 
     {% if user.is_authenticated %}
         <p class="mt-3" style="color: white;">Estás logueado como {{ user.first_name }} {{ user.last_name }}</p>
