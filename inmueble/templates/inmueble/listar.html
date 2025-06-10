@@ -73,13 +73,51 @@
 {% endif %}
 {% load custom_filters %}
 
-<form method="get">
-    <!-- Filtro de Tipo -->
-    <label for="tipo">Tipo:</label>
-    <select name="tipo" id="tipo">
-        <option value="">Todos</option>
-        {% for value, label in tipo_choices %}
-        <option value="{{ value }}" {% if tipo|equals:value %}selected{% endif %}>{{ label }}</option>
+    <form method="get">
+        <!-- Filtro de Tipo -->
+        <label for="tipo">Tipo:</label>
+        <select name="tipo" id="tipo">
+            <option value="">Todos</option>
+            {% for value, label in tipo_choices %}
+            <option value="{{ value }}" {% if tipo|equals:value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+
+        <!-- Filtro de Huéspedes -->
+        <label for="huespedes">Cantidad mínima de huéspedes:</label>
+        <input type="number" name="huespedes" id="huespedes" min="1" value="{{ huespedes|default:'' }}">
+
+        <!-- Filtro de Metros -->
+        <label for="metros">Metros cuadrados mínimos:</label>
+        <input type="number" name="metros" id="metros" min="1" step="0.01" value="{{ metros|default:'' }}">
+
+        <button type="submit">Filtrar</button>
+        <a href="{% url 'listar_inmuebles' %}" class="btn btn-secondary">Limpiar filtros</a>
+    </form>
+
+    <hr>
+
+    {% if page_obj %}
+    <div class ="grid-containter">
+        {% for inmueble in page_obj %}
+            <div class="tarjeta">
+            <h3>{{ inmueble.titulo }}</h3>
+            <p><strong>Tipo:</strong> {{ inmueble.tipo }}</p>
+            <p><strong>Ciudad:</strong> {{ inmueble.ciudad }}</p>
+            <p><strong>Precio:</strong> ${{ inmueble.precio_diario }}</p>
+            <p><strong>Estado:</strong> {{ inmueble.estado }}</p>
+            </div>
+            <a href="{% url 'ver_detalle_inmueble' inmueble_id=inmueble.id %}" class="btn btn-info">Ver Detalle</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'crear_reserva' inmueble_id=inmueble.id %}" class="btn btn-warning">Reservar</a>
+            {% else %}
+                <a href="{% url 'login' %}?next={% url 'crear_reserva' inmueble_id=inmueble.id %}" class="btn btn-warning">Reservar</a>
+            {% endif %}
+            {% if user.is_authenticated and user.rol == "admin" or user.rol == "empleado" %}
+                <a href="{% url 'editar_inmueble' id=inmueble.id %}" class="btn btn-warning">Editar</a>
+                <a href="{% url 'cambiar_estado_inmueble' inmueble.id %}" class="btn btn-warning">Cambiar estado</a> 
+                <a href="{% url 'eliminar_inmueble' id=inmueble.id %}" style="color: red;">Eliminar</a>
+            {% endif %}
         {% endfor %}
     </select>
 

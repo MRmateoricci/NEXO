@@ -138,9 +138,5 @@ EMAIL_PORT = 2525
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = 'no-reply@nexo.com'
 
-<<<<<<< HEAD
-
-=======
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
->>>>>>> 1297d24 (Ajustes del cambio de estado y agrego imgs)
