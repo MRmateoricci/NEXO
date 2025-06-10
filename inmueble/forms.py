@@ -4,12 +4,12 @@ from .models import Inmueble
 class AltaInmueble(forms.ModelForm):
     class Meta:
         model = Inmueble
-        exclude = ['fecha_inicio_inactividad', 'fecha_fin_inactividad']
+        exclude = ['fecha_inicio_inactividad', 'fecha_fin_inactividad','activo', 'estado']
 
 class EditarInmueble(forms.ModelForm):
     class Meta:
         model = Inmueble
-        exclude = ['fecha_inicio_inactividad', 'fecha_fin_inactividad']
+        exclude = ['fecha_inicio_inactividad', 'fecha_fin_inactividad','activo', 'estado']
 
 from datetime import date
 
