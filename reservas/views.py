@@ -142,11 +142,12 @@ def validarSolicitudReservaView(request):
     return render(request, 'validar_solicitud_reserva.html', {'solicitudes': solicitudes})
 
 def verSolicitudesPendientesView(request, inquilino_id):
-    # Mostrar solo solicitudes pendientes
-    solicitudes = SolicitudReserva.objects.filter(estado='pendiente')
+    # Mostrar todas las solicitudes de reserva y reservas del inquilino, sin importar el estado
     inquilino = Usuario.objects.get(id=inquilino_id)
-    solicitudesInquilino = solicitudes.filter(inquilino=inquilino)
-    return render(request, 'ver_solicitudes_pendientes.html', {'solicitudes': solicitudesInquilino})
+    solicitudesInquilino = SolicitudReserva.objects.filter(inquilino=inquilino)
+    reservasInquilino = Reserva.objects.filter(inquilino=inquilino)
+    solicitudes_y_reservas = list(solicitudesInquilino) + list(reservasInquilino)
+    return render(request, 'ver_solicitudes_pendientes.html', {'solicitudes': solicitudes_y_reservas})
 
 #@user_passes_test(es_empleado)
 def solicitudReservasEmpleadoView(request):
