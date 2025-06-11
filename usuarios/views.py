@@ -79,6 +79,7 @@ def login_view(request):
             user = form.get_user()
             if user.rol == 'admin':
                 codigo = get_random_string(length=6, allowed_chars='0123456789')
+                print(f"Código de verificación 2FA: {codigo}")  # Para pruebas, eliminar en producción
                 request.session['codigo_2fa'] = codigo
                 request.session['usuario_2fa_id'] = user.id
 

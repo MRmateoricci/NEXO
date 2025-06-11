@@ -52,6 +52,7 @@
             <p style="font-weight:bold;">Menú</p>
             <a href="{% url 'home' %}" style="display:block; color: #FFA500; margin:0.5rem 0;">Inicio</a>
             {% if user.is_authenticated %}
+<<<<<<< HEAD
             <a href="{% url 'registrar_tarjeta' %}" style="display:block; color: #FFA500; margin:0.5rem 0;">Registrar
                 Tarjeta</a>
             {% if user.rol == 'admin' or user.rol == 'empleado' %}
@@ -64,6 +65,14 @@
             <a href="{% url 'ver_solicitudes_pendientes' user.id %}"
                 style="display: block; color: #FFA500; margin:0.5rem 0;">Ver historial de reservas Pendientes</a>
 
+=======
+                {% if user.rol == 'admin' or user.rol == 'empleado' %}
+                    <a href="{% url 'lista_usuarios' %}" style="display:block; color: #FFA500; margin:0.5rem 0;">Ver usuarios</a>
+                    <a href="{% url 'registro' %}" style="display:block; color: #FFA500; margin:0.5rem 0;">Registrar usuario</a>
+                    <a href="{% url 'validar_solicitud_reserva' %}" style="display:block; color: #FFA500; margin:0.5rem 0;">Validar Solicitudes de reserva</a>
+                {% endif %}
+                    <a href="{% url 'ver_solicitudes_pendientes' user.id %}" style="display: block; color: #FFA500; margin:0.5rem 0;">Ver historial de reservas</a>
+>>>>>>> solicitud-reserva
             {% endif %}
             <a href="{% url 'listar_inmuebles' %}" style="display:block; color: #FFA500; margin:0.5rem 0;">Inmuebles</a>
         </div>
