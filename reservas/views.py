@@ -2,13 +2,17 @@ import json
 from pyexpat.errors import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
-from .models import Inquilino, Reserva, SolicitudReserva
+from .models import Inquilino, PagoReserva, Reserva, SolicitudReserva, TarjetaPago
 from django.http import JsonResponse, HttpResponse
 from . import forms
 from usuarios.models import Usuario
 from inmueble.models import Inmueble
-from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.decorators import user_passes_test, login_required
 from django.utils import timezone
+
+from django.core.mail import send_mail
+from django.urls import reverse
+from django.conf import settings
 
 def es_empleado(usuario):
     return getattr(usuario, 'rol', '').lower() == 'empleado'
@@ -100,7 +104,7 @@ def crearReservaView(request, inmueble_id):
     # GET
     return render(request, 'crear_reserva.html', {
         'fechas_ocupadas': fechas_ocupadas
-    })
+    }) 
 
         
     
@@ -121,7 +125,8 @@ def eliminarReservaView(request):
 #@user_passes_test(es_empleado)
 def validarSolicitudReservaView(request):
     # Mostrar solo solicitudes pendientes
-    solicitudes = SolicitudReserva.objects.filter(estado='pendiente', fecha_inicio__gt= timezone.now().date()).order_by('fecha_inicio')
+    solicitudes = SolicitudReserva.objects.filter(estado='pendiente').order_by('fecha_inicio')
+
 
     if request.method == 'POST':
         solicitud_id = request.POST.get('solicitud_id')
@@ -129,6 +134,18 @@ def validarSolicitudReservaView(request):
         try:
             solicitud = SolicitudReserva.objects.get(id=solicitud_id)
             if accion == 'aceptar':
+                # Generar link de pago
+                link_pago = request.build_absolute_uri(
+                    reverse('pagar_reserva', args=[solicitud.id])
+                )
+
+                # Enviar mail al inquilino
+                send_mail(
+                    subject='Tu reserva fue aprobada - Realizá el pago',
+                    message=f'Tu solicitud fue aceptada. Podés pagarla ingresando aquí:\n{link_pago}',
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[solicitud.inquilino.email]
+                )
                 solicitud.estado = 'pendiente de pago'
             elif accion == 'rechazar':
                 solicitud.estado = 'cancelada'
@@ -195,3 +212,34 @@ def gestion_inquilinos_view(request, reserva_id):
         'reserva': reserva,
         'usuarios_registrados': usuarios_registrados
     })
+
+from .models import TarjetaPago, PagoReserva
+
+def pagar_reserva_view(request, solicitud_id):
+    solicitud = get_object_or_404(SolicitudReserva, id=solicitud_id)
+
+    if solicitud.estado != 'pendiente de pago':
+        return render(request, 'pago_no_valido.html', {'mensaje': 'Esta solicitud no está disponible para pago.'})
+
+    if request.method == 'POST':
+        numero = request.POST.get('numero')
+        vencimiento = request.POST.get('vencimiento')
+        cvv = request.POST.get('cvv')
+
+        if not (numero and vencimiento and cvv):
+            return render(request, 'pagar_reserva.html', {'solicitud': solicitud, 'error': 'Completa todos los campos.'})
+
+        # Verificar si la tarjeta existe
+        if TarjetaPago.objects.filter(numero=numero, vencimiento=vencimiento, cvv=cvv).exists():
+            # Marcar la solicitud como pagada
+            solicitud.estado = 'pagada'
+            solicitud.save()
+
+            # Guardar el pago (si tenés modelo PagoReserva)
+            PagoReserva.objects.create(solicitud=solicitud)
+
+            return render(request, 'pago_exitoso.html', {'solicitud': solicitud})
+        else:
+            return render(request, 'pagar_reserva.html', {'solicitud': solicitud, 'error': 'Datos de tarjeta inválidos.'})
+
+    return render(request, 'pagar_reserva.html', {'solicitud': solicitud})

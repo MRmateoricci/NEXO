@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Pago de reserva</h2>
+
+<p><strong>Inmueble:</strong> {{ solicitud.inmueble }}</p>
+<p><strong>Fechas:</strong> {{ solicitud.fecha_inicio }} a {{ solicitud.fecha_fin }}</p>
+
+{% if error %}
+<p style="color: red;">{{ error }}</p>
+{% endif %}
+
+<form method="POST">
+    {% csrf_token %}
+
+    <label>Número de tarjeta:</label>
+    <input type="text" name="numero" required>
+
+    <label>Vencimiento:</label>
+    <input type="text" name="vencimiento" required>
+
+    <label>CVV:</label>
+    <input type="text" name="cvv" required>
+
+    <button type="submit">Pagar</button>
+</form>
+
+{% endblock %}

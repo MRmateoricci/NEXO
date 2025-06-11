@@ -28,4 +28,4 @@ class InquilinoNuevoForm(forms.Form):
     edad = forms.IntegerField(min_value=1)
 
 class BuscarUsuarioForm(forms.Form):
-    busqueda = forms.CharField(required=False, label="Buscar por nombre o DNI")
+    busqueda = forms.CharField(required=False, label="Buscar por nombre o DNI") 
