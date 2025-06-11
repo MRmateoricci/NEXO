@@ -125,7 +125,8 @@ def eliminarReservaView(request):
 #@user_passes_test(es_empleado)
 def validarSolicitudReservaView(request):
     # Mostrar solo solicitudes pendientes
-    solicitudes = SolicitudReserva.objects.filter(estado='pendiente', fecha_inicio__gt= timezone.now().date()).order_by('fecha_inicio')
+    solicitudes = SolicitudReserva.objects.filter(estado='pendiente').order_by('fecha_inicio')
+
 
     if request.method == 'POST':
         solicitud_id = request.POST.get('solicitud_id')

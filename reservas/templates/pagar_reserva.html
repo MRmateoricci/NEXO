@@ -11,15 +11,17 @@
 
 <form method="POST">
     {% csrf_token %}
-    <label>Número de tarjeta:</label><br>
-    <input type="text" name="numero" maxlength="16" required><br>
 
-    <label>Vencimiento (MM/AA):</label><br>
-    <input type="text" name="vencimiento" placeholder="MM/AA" required><br>
+    <label>Número de tarjeta:</label>
+    <input type="text" name="numero" required>
 
-    <label>CVV:</label><br>
-    <input type="text" name="cvv" maxlength="4" required><br><br>
+    <label>Vencimiento:</label>
+    <input type="text" name="vencimiento" required>
 
-    <button type="submit">Confirmar pago</button>
+    <label>CVV:</label>
+    <input type="text" name="cvv" required>
+
+    <button type="submit">Pagar</button>
 </form>
+
 {% endblock %}
