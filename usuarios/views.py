@@ -39,7 +39,6 @@ def registro(request):
                     return redirect('home')
                 else:
                     messages.error(request, "Error en el registro. Verifique los datos ingresados.")
-                    return redirect('registro')
             else:
                 form = RegistroForm()
                 form.fields['rol'].initial = 'inquilino'
