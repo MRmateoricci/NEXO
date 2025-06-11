@@ -3,133 +3,137 @@
 {% block content %}
 <h1 style="text-align: center;">Mis Solicitudes de Reserva</h1>
 <style>
-.solicitudes-columns {
-    display: flex;
-    justify-content: center;
-    gap: 2rem;
-    margin-top: 2rem;
-}
-.solicitudes-col {
-    background: #f8f9fa;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    padding: 1.5rem;
-    min-width: 300px;
-    flex: 1;
-}
-.solicitudes-col h2 {
-    text-align: center;
-    margin-bottom: 1rem;
-}
-ul {
-    list-style: none;
-    padding: 0;
-}
-li {
-    margin-bottom: 1em;
-    background: #fff;
-    border-radius: 8px;
-    padding: 1em;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    font-size: 1em;
-}
+    .solicitudes-columns {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+
+    .solicitudes-col {
+        background: #f8f9fa;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        padding: 1.5rem;
+        min-width: 300px;
+        flex: 1;
+    }
+
+    .solicitudes-col h2 {
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+
+    ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    li {
+        margin-bottom: 1em;
+        background: #fff;
+        border-radius: 8px;
+        padding: 1em;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        font-size: 1em;
+    }
 </style>
 
 <div class="solicitudes-columns">
     <div class="solicitudes-col">
         <h2>Pendiente</h2>
         <ul>
-        {% for solicitud in solicitudes %}
+            {% for solicitud in solicitudes %}
             {% if solicitud.estado == "pendiente" %}
-                <li id="solicitud-{{ solicitud.id }}">
-                    <strong>Inmueble:</strong> {{ solicitud.inmueble }}<br>
-                    <strong>Fecha inicio:</strong> {{ solicitud.fecha_inicio }}<br>
-                    <strong>Fecha fin:</strong> {{ solicitud.fecha_fin }}<br>
-                    <strong>Estado:</strong> {{ solicitud.estado|capfirst }}
-                    <button class="btn btn-danger" style="margin-left: 1em;"
-                        onclick="eliminarSolicitud('{{ solicitud.id }}')">Cancelar solicitud de reserva</button>
-                </li>
+            <li id="solicitud-{{ solicitud.id }}">
+                <strong>Inmueble:</strong> {{ solicitud.inmueble }}<br>
+                <strong>Fecha inicio:</strong> {{ solicitud.fecha_inicio }}<br>
+                <strong>Fecha fin:</strong> {{ solicitud.fecha_fin }}<br>
+                <strong>Estado:</strong> {{ solicitud.estado|capfirst }}
+                <button class="btn btn-danger" style="margin-left: 1em;"
+                    onclick="eliminarSolicitud('{{ solicitud.id }}')">Cancelar solicitud de reserva</button>
+            </li>
             {% endif %}
-        {% empty %}
+            {% empty %}
             <li>No tienes solicitudes de reserva pendientes.</li>
-        {% endfor %}
+            {% endfor %}
         </ul>
     </div>
     <div class="solicitudes-col">
         <h2>Pendiente de Pago</h2>
         <ul>
-        {% for solicitud in solicitudes %}
+            {% for solicitud in solicitudes %}
             {% if solicitud.estado == "pendiente de pago" %}
-                <li>
-                    <strong>Inmueble:</strong> {{ solicitud.inmueble }}<br>
-                    <strong>Fecha inicio:</strong> {{ solicitud.fecha_inicio }}<br>
-                    <strong>Fecha fin:</strong> {{ solicitud.fecha_fin }}<br>
-                    <strong>Estado:</strong> {{ solicitud.estado|capfirst }}
-                </li>
+            <li>
+                <strong>Inmueble:</strong> {{ solicitud.inmueble }}<br>
+                <strong>Fecha inicio:</strong> {{ solicitud.fecha_inicio }}<br>
+                <strong>Fecha fin:</strong> {{ solicitud.fecha_fin }}<br>
+                <strong>Estado:</strong> {{ solicitud.estado|capfirst }}
+            </li>
             {% endif %}
-        {% empty %}
+            {% empty %}
             <li>No tienes solicitudes de reserva pendientes de pago.</li>
-        {% endfor %}
+            {% endfor %}
         </ul>
     </div>
     <div class="solicitudes-col">
         <h2>Confirmada</h2>
         <ul>
-        {% for solicitud in solicitudes %}
+            {% for solicitud in solicitudes %}
             {% if solicitud.estado == "confirmada" %}
-                <li>
-                    <strong>Inmueble:</strong> {{ solicitud.inmueble }}<br>
-                    <strong>Fecha inicio:</strong> {{ solicitud.fecha_inicio }}<br>
-                    <strong>Fecha fin:</strong> {{ solicitud.fecha_fin }}<br>
-                    <strong>Estado:</strong> {{ solicitud.estado|capfirst }}
-                    <button class="btn btn-danger" style="margin-left: 1em;"
-                        onclick="eliminarSolicitud('{{ solicitud.id }}')">Cancelar solicitud de reserva</button>
-                </li>
+            <li>
+                <strong>Inmueble:</strong> {{ solicitud.inmueble }}<br>
+                <strong>Fecha inicio:</strong> {{ solicitud.fecha_inicio }}<br>
+                <strong>Fecha fin:</strong> {{ solicitud.fecha_fin }}<br>
+                <strong>Estado:</strong> {{ solicitud.estado|capfirst }}
+                <button class="btn btn-danger" style="margin-left: 1em;"
+                    onclick="eliminarSolicitud('{{ solicitud.id }}')">Cancelar reserva</button>
+            </li>
             {% endif %}
-        {% empty %}
+            {% empty %}
             <li>No tienes solicitudes de reserva confirmadas.</li>
-        {% endfor %}
+            {% endfor %}
         </ul>
     </div>
     <div class="solicitudes-col">
         <h2>Cancelada</h2>
         <ul>
-        {% for solicitud in solicitudes %}
+            {% for solicitud in solicitudes %}
             {% if solicitud.estado == "cancelada" %}
-                <li>
-                    <strong>Inmueble:</strong> {{ solicitud.inmueble }}<br>
-                    <strong>Fecha inicio:</strong> {{ solicitud.fecha_inicio }}<br>
-                    <strong>Fecha fin:</strong> {{ solicitud.fecha_fin }}<br>
-                    <strong>Estado:</strong> {{ solicitud.estado|capfirst }}
-                </li>
+            <li>
+                <strong>Inmueble:</strong> {{ solicitud.inmueble }}<br>
+                <strong>Fecha inicio:</strong> {{ solicitud.fecha_inicio }}<br>
+                <strong>Fecha fin:</strong> {{ solicitud.fecha_fin }}<br>
+                <strong>Estado:</strong> {{ solicitud.estado|capfirst }}
+            </li>
             {% endif %}
-        {% empty %}
+            {% empty %}
             <li>No tienes solicitudes de reserva canceladas.</li>
-        {% endfor %}
+            {% endfor %}
         </ul>
     </div>
 </div>
 
 <script>
-function eliminarSolicitud(id) {
-    if (confirm('¿Estás seguro de que deseas eliminar esta solicitud?')) {
-        fetch("{% url 'cancelar_reserva' %}", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": "{{ csrf_token }}"
-            },
-            body: JSON.stringify({ solicitud_id: id })
-        })
-        .then(response => {
-            if (response.ok) {
-                // Elimina el elemento de la lista del DOM
-                document.getElementById('solicitud-' + id).remove();
-            } else {
-                alert('No se pudo eliminar la solicitud.');
-            }
-        });
+    function eliminarSolicitud(id) {
+        if (confirm('¿Estás seguro de que deseas eliminar esta solicitud?')) {
+            fetch("{% url 'cancelar_reserva' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                body: JSON.stringify({ solicitud_id: id })
+            })
+                .then(response => {
+                    if (response.ok) {
+                        // Elimina el elemento de la lista del DOM
+                        document.getElementById('solicitud-' + id).remove();
+                    } else {
+                        alert('No se pudo eliminar la solicitud.');
+                    }
+                });
+        }
     }
-}
 </script>
 {% endblock %}

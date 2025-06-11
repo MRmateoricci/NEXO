@@ -4,6 +4,8 @@
 
 <p><strong>Inmueble:</strong> {{ solicitud.inmueble }}</p>
 <p><strong>Fechas:</strong> {{ solicitud.fecha_inicio }} a {{ solicitud.fecha_fin }}</p>
+<p><strong>Total a pagar:</strong> ${{ solicitud.monto_total }}</p>
+
 
 {% if error %}
 <p style="color: red;">{{ error }}</p>

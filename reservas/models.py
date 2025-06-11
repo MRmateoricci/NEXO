@@ -34,12 +34,13 @@ class SolicitudReserva(models.Model):
     fecha_inicio = models.DateField() 
     fecha_fin = models.DateField()
     estado = models.CharField(max_length=50, choices=ESTADOS_RESERVA, default='pendiente')
+    monto_total = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
 
 class TarjetaPago(models.Model):
-    titular = models.CharField(max_length=100, null=True, blank=True)
     numero = models.CharField(max_length=16, unique=True)
     vencimiento = models.CharField(max_length=5)  # formato MM/AA
     cvv = models.CharField(max_length=4)
+    saldo = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
 
     def __str__(self):
         return f"**** **** **** {self.numero[-4:]}"
