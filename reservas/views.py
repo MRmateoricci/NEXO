@@ -218,6 +218,10 @@ from .models import TarjetaPago, PagoReserva
 def pagar_reserva_view(request, solicitud_id):
     solicitud = get_object_or_404(SolicitudReserva, id=solicitud_id)
 
+    # Validación de dueño
+    if solicitud.inquilino != request.user:
+        return render(request, 'pago_no_valido.html', {'mensaje': 'No tenés permiso para pagar esta solicitud.'})
+
     if solicitud.estado != 'pendiente de pago':
         return render(request, 'pago_no_valido.html', {'mensaje': 'Esta solicitud no está disponible para pago.'})
 
@@ -229,13 +233,18 @@ def pagar_reserva_view(request, solicitud_id):
         if not (numero and vencimiento and cvv):
             return render(request, 'pagar_reserva.html', {'solicitud': solicitud, 'error': 'Completa todos los campos.'})
 
-        # Verificar si la tarjeta existe
-        if TarjetaPago.objects.filter(numero=numero, vencimiento=vencimiento, cvv=cvv).exists():
-            # Marcar la solicitud como pagada
+        # Validar tarjeta del usuario
+        tarjeta_valida = TarjetaPago.objects.filter(
+            numero=numero,
+            vencimiento=vencimiento,
+            cvv=cvv,
+            titular=request.user
+        ).first()
+
+        if tarjeta_valida:
             solicitud.estado = 'pagada'
             solicitud.save()
 
-            # Guardar el pago (si tenés modelo PagoReserva)
             PagoReserva.objects.create(solicitud=solicitud)
 
             return render(request, 'pago_exitoso.html', {'solicitud': solicitud})

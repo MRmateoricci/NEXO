@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 class Reserva(models.Model):
@@ -19,15 +20,23 @@ class Inquilino(models.Model):
         return self.nombre
     
 class SolicitudReserva(models.Model):
+    ESTADOS_RESERVA = [
+    ('pendiente', 'Pendiente'),
+    ('pendiente de pago', 'Pendiente de Pago'),
+    ('pagada', 'Pagada'),
+    ('confirmada', 'Confirmada'),
+    ('cancelada', 'Cancelada'),
+    ]
     inquilino = models.ForeignKey('usuarios.Usuario', on_delete=models.CASCADE)
     inquilinos = models.ManyToManyField(Inquilino)
     inmueble = models.ForeignKey('inmueble.Inmueble', on_delete=models.CASCADE)
     fecha_solicitud = models.DateField(auto_now_add=True)
     fecha_inicio = models.DateField() 
     fecha_fin = models.DateField()
-    estado = models.CharField(max_length=50, choices=[('pendiente', 'Pendiente'), ('confirmada', 'Confirmada'), ('cancelada', 'Cancelada')], default='pendiente')
+    estado = models.CharField(max_length=50, choices=ESTADOS_RESERVA, default='pendiente')
 
 class TarjetaPago(models.Model):
+    titular = models.CharField(max_length=100, null=True, blank=True)
     numero = models.CharField(max_length=16, unique=True)
     vencimiento = models.CharField(max_length=5)  # formato MM/AA
     cvv = models.CharField(max_length=4)
