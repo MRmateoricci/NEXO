@@ -1,8 +1,9 @@
 from django.db import models
 
 
+
 class Inmueble(models.Model):
-    titulo = models.CharField(max_length=200)
+    titulo = models.CharField(max_length=200, unique=True)
     descripcion = models.TextField()
     tipo = models.CharField(max_length=50, choices=[('Casa', 'Casa'), ('Local', 'Local'), ('Cochera', 'Cochera'), ('Departamento', 'Departamento')])
     metros_cuadrados = models.DecimalField(max_digits=10, decimal_places=2)
