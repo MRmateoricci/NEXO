@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Registrar nueva tarjeta</h2>
+
+{% if error %}
+<p style="color: red;">{{ error }}</p>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+
+    <label for="numero">Número de tarjeta:</label><br>
+    <input type="text" name="numero" id="numero" maxlength="16" required><br><br>
+
+    <label for="vencimiento">Vencimiento (MM/AA):</label><br>
+    <input type="text" name="vencimiento" id="vencimiento" placeholder="MM/AA" maxlength="5" required><br><br>
+
+    <label for="cvv">CVV:</label><br>
+    <input type="text" name="cvv" id="cvv" maxlength="4" required><br><br>
+
+    <button type="submit">Guardar tarjeta</button>
+</form>
+{% endblock %}

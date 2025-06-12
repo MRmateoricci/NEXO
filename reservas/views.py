@@ -1,14 +1,26 @@
+from datetime import datetime
 import json
 from pyexpat.errors import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
-from .models import Inquilino, Reserva, SolicitudReserva
+from .models import Inquilino, PagoReserva, Reserva, SolicitudReserva, TarjetaPago
 from django.http import JsonResponse, HttpResponse
 from . import forms
 from usuarios.models import Usuario
 from inmueble.models import Inmueble
-from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.decorators import user_passes_test, login_required
 from django.utils import timezone
+
+from django.core.mail import send_mail
+from django.urls import reverse
+from django.conf import settings
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.urls import reverse
+from django.conf import settings
+from django.shortcuts import render
+from django.contrib.auth.decorators import user_passes_test
+from .models import SolicitudReserva
 
 def es_empleado(usuario):
     return getattr(usuario, 'rol', '').lower() == 'empleado'
@@ -34,22 +46,30 @@ def crearReservaView(request, inmueble_id):
             'fecha_fin'   : inmueble.fecha_fin_inactividad.strftime('%Y-%m-%d'),
         })
 
-
     if request.method == 'POST':
-        fecha_inicio = request.POST.get('fecha_inicio')
-        fecha_fin = request.POST.get('fecha_fin')
+        fecha_inicio_str = request.POST.get('fecha_inicio')
+        fecha_fin_str = request.POST.get('fecha_fin')
 
-        if not fecha_inicio or not fecha_fin:
+        if not fecha_inicio_str or not fecha_fin_str:
             return JsonResponse({'error': 'Debés completar ambas fechas.'}, status=400)
 
         try:
-            # Crear la reserva
+            fecha_inicio = datetime.strptime(fecha_inicio_str, "%Y-%m-%d").date()
+            fecha_fin = datetime.strptime(fecha_fin_str, "%Y-%m-%d").date()
+
+            dias = (fecha_fin - fecha_inicio).days
+            if dias <= 0:
+                return JsonResponse({'error': 'La fecha de fin debe ser posterior a la de inicio.'}, status=400)
+
+            monto_total = dias * inmueble.precio_diario
+
             reserva = SolicitudReserva.objects.create(
                 fecha_inicio=fecha_inicio,
                 fecha_fin=fecha_fin,
                 inquilino=usuario_principal,
                 inmueble=inmueble,
-                estado='pendiente'
+                estado='pendiente',
+                monto_total=monto_total
             )
 
             # Procesar inquilinos existentes
@@ -68,7 +88,6 @@ def crearReservaView(request, inmueble_id):
                 reserva.inquilinos.add(inquilino)
 
             # Procesar inquilinos nuevos
-            inquilinos_nuevos = []
             inquilinos_nuevos_json = request.POST.get('inquilinos_nuevos')
             if inquilinos_nuevos_json:
                 try:
@@ -76,20 +95,20 @@ def crearReservaView(request, inmueble_id):
                     if not isinstance(inquilinos_nuevos, list):
                         inquilinos_nuevos = [inquilinos_nuevos]
                 except json.JSONDecodeError:
-                    pass
+                    inquilinos_nuevos = []
 
-            for data in inquilinos_nuevos:
-                inquilino = Inquilino.objects.create(
-                    nombre=data.get('nombre', ''),
-                    dni=data.get('dni', ''),
-                    edad=int(data.get('edad', 0)),
-                    creado_por=usuario_principal
-                )
-                reserva.inquilinos.add(inquilino)
+                for data in inquilinos_nuevos:
+                    inquilino = Inquilino.objects.create(
+                        nombre=data.get('nombre', ''),
+                        dni=data.get('dni', ''),
+                        edad=int(data.get('edad', 0)),
+                        creado_por=usuario_principal
+                    )
+                    reserva.inquilinos.add(inquilino)
 
             return JsonResponse({
                 'success': True,
-                'redirect_url': '/inmueble/listar?reserva=ok'  # URL a la que redirigir
+                'redirect_url': '/inmueble/listar?reserva=ok'
             })
 
         except Exception as e:
@@ -97,13 +116,10 @@ def crearReservaView(request, inmueble_id):
                 'error': f'Error al crear la reserva: {str(e)}'
             }, status=500)
 
-    # GET
     return render(request, 'crear_reserva.html', {
         'fechas_ocupadas': fechas_ocupadas
     })
 
-        
-    
 def eliminarReservaView(request):
     if request.method == "POST":
         import json
@@ -120,8 +136,7 @@ def eliminarReservaView(request):
 
 #@user_passes_test(es_empleado)
 def validarSolicitudReservaView(request):
-    # Mostrar solo solicitudes pendientes
-    solicitudes = SolicitudReserva.objects.filter(estado='pendiente', fecha_inicio__gt= timezone.now().date()).order_by('fecha_inicio')
+    solicitudes = SolicitudReserva.objects.filter(estado='pendiente').order_by('fecha_inicio')
 
     if request.method == 'POST':
         solicitud_id = request.POST.get('solicitud_id')
@@ -129,24 +144,48 @@ def validarSolicitudReservaView(request):
         try:
             solicitud = SolicitudReserva.objects.get(id=solicitud_id)
             if accion == 'aceptar':
+                # Generar link de pago
+                link_pago = request.build_absolute_uri(
+                    reverse('pagar_reserva', args=[solicitud.id])
+                )
+
+                # Renderizar el contenido HTML del mail
+                html_content = render_to_string('boton_pago.html', {
+                    'usuario': solicitud.inquilino,
+                    'url_pago': link_pago,
+                })
+
+                # Enviar correo con contenido HTML
+                email = EmailMultiAlternatives(
+                    subject='Tu reserva fue aprobada - Realizá el pago',
+                    body='Tu solicitud fue aceptada. Ingresá al siguiente enlace para pagar.',
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[solicitud.inquilino.email],
+                )
+                email.attach_alternative(html_content, "text/html")
+                email.send()
+
                 solicitud.estado = 'pendiente de pago'
+
             elif accion == 'rechazar':
                 solicitud.estado = 'cancelada'
+
             solicitud.save()
         except SolicitudReserva.DoesNotExist:
-            pass  # Puedes manejar el error si quieres
+            pass  # Manejo opcional del error
 
-        # Recargar la página para mostrar el cambio
+        # Recargar la página con las solicitudes pendientes
         solicitudes = SolicitudReserva.objects.filter(estado='pendiente')
 
     return render(request, 'validar_solicitud_reserva.html', {'solicitudes': solicitudes})
 
 def verSolicitudesPendientesView(request, inquilino_id):
-    # Mostrar solo solicitudes pendientes
-    solicitudes = SolicitudReserva.objects.filter(estado='pendiente')
+    # Mostrar todas las solicitudes de reserva y reservas del inquilino, sin importar el estado
     inquilino = Usuario.objects.get(id=inquilino_id)
-    solicitudesInquilino = solicitudes.filter(inquilino=inquilino)
-    return render(request, 'ver_solicitudes_pendientes.html', {'solicitudes': solicitudesInquilino})
+    solicitudesInquilino = SolicitudReserva.objects.filter(inquilino=inquilino)
+    reservasInquilino = Reserva.objects.filter(inquilino=inquilino)
+    solicitudes_y_reservas = list(solicitudesInquilino) + list(reservasInquilino)
+    return render(request, 'ver_solicitudes_pendientes.html', {'solicitudes': solicitudes_y_reservas})
 
 #@user_passes_test(es_empleado)
 def solicitudReservasEmpleadoView(request):
@@ -195,3 +234,66 @@ def gestion_inquilinos_view(request, reserva_id):
         'reserva': reserva,
         'usuarios_registrados': usuarios_registrados
     })
+
+from .models import TarjetaPago, PagoReserva
+
+def pagar_reserva_view(request, solicitud_id):
+    solicitud = get_object_or_404(SolicitudReserva, id=solicitud_id)
+
+    # Validación de dueño
+    if solicitud.inquilino != request.user:
+        return render(request, 'pago_no_valido.html', {'mensaje': 'No tenés permiso para pagar esta solicitud.'})
+
+    if solicitud.estado != 'pendiente de pago':
+        return render(request, 'pago_no_valido.html', {'mensaje': 'Esta solicitud no está disponible para pago.'})
+
+    if request.method == 'POST':
+        numero = request.POST.get('numero', '').strip()
+        vencimiento = request.POST.get('vencimiento', '').strip()
+        cvv = request.POST.get('cvv', '').strip()
+
+        # Validaciones básicas de formato
+        if not (numero and vencimiento and cvv):
+            return render(request, 'pagar_reserva.html', {'solicitud': solicitud, 'error': 'Completa todos los campos.'})
+
+        if not numero.isdigit() or len(numero) != 16:
+            return render(request, 'pagar_reserva.html', {'solicitud': solicitud, 'error': 'Número de tarjeta inválido. Debe tener 16 dígitos.'})
+
+        if not cvv.isdigit() or len(cvv) not in [3, 4]:
+            return render(request, 'pagar_reserva.html', {'solicitud': solicitud, 'error': 'CVV inválido. Debe tener 3 o 4 dígitos numéricos.'})
+
+        # Validar vencimiento (MM/AA)
+        try:
+            vencimiento_dt = datetime.strptime(vencimiento, "%m/%y")
+            ahora = datetime.now()
+            if vencimiento_dt.year < ahora.year or (vencimiento_dt.year == ahora.year and vencimiento_dt.month < ahora.month):
+                return render(request, 'pagar_reserva.html', {'solicitud': solicitud, 'error': 'La tarjeta está vencida.'})
+        except ValueError:
+            return render(request, 'pagar_reserva.html', {'solicitud': solicitud, 'error': 'Formato de vencimiento inválido. Usá MM/AA.'})
+
+        # Validar que exista la tarjeta asociada al usuario
+        tarjeta = TarjetaPago.objects.filter(
+            numero=numero,
+            vencimiento=vencimiento,
+            cvv=cvv,
+        ).first()
+
+        if not tarjeta:
+            return render(request, 'pagar_reserva.html', {'solicitud': solicitud, 'error': 'Datos de tarjeta inválidos'})
+
+        # Validar saldo
+        if tarjeta.saldo < solicitud.monto_total:
+            return render(request, 'pagar_reserva.html', {'solicitud': solicitud, 'error': 'Saldo insuficiente.'})
+
+        # Procesar pago
+        tarjeta.saldo -= solicitud.monto_total
+        tarjeta.save()
+
+        solicitud.estado = 'confirmada'
+        solicitud.save()
+
+        PagoReserva.objects.create(solicitud=solicitud)
+
+        return render(request, 'pago_exitoso.html', {'solicitud': solicitud})
+
+    return render(request, 'pagar_reserva.html', {'solicitud': solicitud})

@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, views as auth_views
 from django.contrib import messages
+
+from reservas.models import TarjetaPago
 from .forms import RegistroForm, LoginForm, EditarUsuarioForm, Codigo2FAForm
 from .models import Usuario
 from inmueble.models import Inmueble
@@ -79,6 +81,7 @@ def login_view(request):
             user = form.get_user()
             if user.rol == 'admin':
                 codigo = get_random_string(length=6, allowed_chars='0123456789')
+                print(f"Código de verificación 2FA: {codigo}")  # Para pruebas, eliminar en producción
                 request.session['codigo_2fa'] = codigo
                 request.session['usuario_2fa_id'] = user.id
 
@@ -193,3 +196,27 @@ def habilitar_usuario(request, usuario_id):
     usuario.save()
     messages.success(request, f'Usuario {usuario.email} habilitado correctamente.')
     return redirect('lista_usuarios')
+
+@login_required
+def registrar_tarjeta_view(request):
+    if request.method == 'POST':
+        numero = request.POST.get('numero')
+        vencimiento = request.POST.get('vencimiento')
+        cvv = request.POST.get('cvv')
+
+        if not (numero and vencimiento and cvv):
+            return render(request, 'usuarios/registrar_tarjeta.html', {'error': 'Completá todos los campos.'})
+
+        if TarjetaPago.objects.filter(numero=numero, titular=request.user).exists():
+            return render(request, 'usuarios/registrar_tarjeta.html', {'error': 'Ya registraste esta tarjeta.'})
+
+        TarjetaPago.objects.create(
+            titular=request.user,
+            numero=numero,
+            vencimiento=vencimiento,
+            cvv=cvv
+        )
+
+        return render(request, 'usuarios/tarjeta_registrada.html')
+
+    return render(request, 'usuarios/registrar_tarjeta.html')

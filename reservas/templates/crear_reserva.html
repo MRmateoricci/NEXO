@@ -172,21 +172,52 @@
             from: f.fecha_inicio,
             to: f.fecha_fin
         }));
+        const fechaFinPicker = flatpickr("#fecha_fin", {
+            dateFormat: "Y-m-d",
+            disable: rangosBloqueados,
+            minDate: "today"
+        });
 
+        // Inicializa flatpickr para fecha_inicio
         flatpickr("#fecha_inicio", {
             dateFormat: "Y-m-d",
             disable: rangosBloqueados,
             minDate: "today",
             onChange: function (selectedDates, dateStr) {
-                // Actualizar fecha mínima de fin cuando se selecciona inicio
-                flatpickr("#fecha_fin").set("minDate", dateStr);
-            }
-        });
+                // Suma un día a la fecha de inicio seleccionada
+                if (selectedDates.length > 0) {
+                    let inicio = new Date(selectedDates[0]);
+                    let siguiente = new Date(inicio);
+                    siguiente.setDate(inicio.getDate() + 1);
 
-        flatpickr("#fecha_fin", {
-            dateFormat: "Y-m-d",
-            disable: rangosBloqueados,
-            minDate: "today"
+                    // Formatea la fecha a YYYY-MM-DD
+                    let yyyy = siguiente.getFullYear();
+                    let mm = String(siguiente.getMonth() + 1).padStart(2, '0');
+                    let dd = String(siguiente.getDate()).padStart(2, '0');
+                    let minFin = `${yyyy}-${mm}-${dd}`;
+
+                    fechaFinPicker.set("minDate", minFin);
+
+                    // Encuentra la primera fecha de inicio ocupada posterior a la seleccionada
+                    let fechaLimite = null;
+                    for (const rango of rangosBloqueados) {
+                        if (rango.from > dateStr) {
+                            if (!fechaLimite || rango.from < fechaLimite) {
+                                fechaLimite = rango.from;
+                            }
+                        }
+                    }
+
+                    // Calcula las fechas a bloquear después de la fecha límite
+                    let disables = [...rangosBloqueados];
+                    if (fechaLimite) {
+                        disables.push({ from: fechaLimite, to: "9999-12-31" });
+                    }
+
+                    // Actualiza el calendario de fecha_fin con los nuevos disables
+                    fechaFinPicker.set("disable", disables);
+                }
+            }
         });
 
         // Configuración de Select2 para búsqueda de usuarios
