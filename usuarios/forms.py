@@ -3,13 +3,14 @@ from .models import Usuario
 from django.contrib.auth import authenticate
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.core.exceptions import ValidationError
+from django.contrib.auth.hashers import make_password
+
 
 def validar_mayor_de_edad(value):
     if value < 18:
         raise forms.ValidationError("Debes ser mayor de 18 años para registrarte.")
     
 
-class RegistroForm(UserCreationForm):
     edad = forms.IntegerField(label='Edad', min_value=0, max_value=120, 
     required=True, validators=[validar_mayor_de_edad],
     help_text="Debes ser mayor de 18 años para registrarte.")
@@ -21,6 +22,37 @@ class RegistroForm(UserCreationForm):
             'password1': forms.PasswordInput(),
             'password2': forms.PasswordInput(),
         }
+
+class RegistroForm(forms.ModelForm):
+    password = forms.CharField(
+        label='Contraseña',
+        widget=forms.PasswordInput,
+        help_text='Debe tener al menos 8 caracteres.'
+    )
+
+    edad = forms.IntegerField(
+        label='Edad',
+        min_value=0,
+        max_value=120,
+        required=True,
+        validators=[validar_mayor_de_edad],
+        help_text="Debes ser mayor de 18 años para registrarte."
+    )
+
+    class Meta:
+        model = Usuario
+        fields = ('username', 'email', 'first_name', 'last_name', 'edad', 'dni', 'rol', 'password')
+
+    def clean_password(self):
+        password = self.cleaned_data.get('password')
+        return password
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.password = make_password(self.cleaned_data["password"])
+        if commit:
+            user.save()
+        return user
     
 class LoginForm(AuthenticationForm):
     username = forms.CharField(label='Usuario o Email')

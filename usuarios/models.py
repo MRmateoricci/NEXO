@@ -7,6 +7,7 @@ class Usuario(AbstractUser):
         ('inquilino', 'Inquilino'),
         ('empleado', 'Empleado'),
     )
+    email = models.EmailField(unique=True, blank=False, null=False)
     dni = models.CharField(max_length=8, unique=True, verbose_name='DNI')
     rol = models.CharField(max_length=20, choices=ROLES, default='Inquilino')
 

@@ -39,6 +39,7 @@ def registro(request):
                     return redirect('home')
                 else:
                     messages.error(request, "Error en el registro. Verifique los datos ingresados.")
+                    form.fields['rol'].widget = forms.HiddenInput()
             else:
                 form = RegistroForm()
                 form.fields['rol'].initial = 'inquilino'
@@ -60,6 +61,7 @@ def registro(request):
                 return redirect('login')
             else:
                 messages.error(request, "Error en el registro. Verifique los datos ingresados.")
+                form.fields['rol'].widget = forms.HiddenInput()
         else:
             form = RegistroForm()
             form.fields['rol'].initial = 'inquilino'
@@ -89,6 +91,7 @@ def login_view(request):
                 return redirect('verificar_2fa')
 
             login(request, user)
+            messages.success(request, f"Bienvenido, {user.first_name}.")
             return redirect('home')
         else:
             messages.error(request, "Usuario o contraseña incorrectos.")
