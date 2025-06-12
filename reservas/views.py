@@ -14,6 +14,13 @@ from django.utils import timezone
 from django.core.mail import send_mail
 from django.urls import reverse
 from django.conf import settings
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.urls import reverse
+from django.conf import settings
+from django.shortcuts import render
+from django.contrib.auth.decorators import user_passes_test
+from .models import SolicitudReserva
 
 def es_empleado(usuario):
     return getattr(usuario, 'rol', '').lower() == 'empleado'
@@ -129,9 +136,7 @@ def eliminarReservaView(request):
 
 #@user_passes_test(es_empleado)
 def validarSolicitudReservaView(request):
-    # Mostrar solo solicitudes pendientes
     solicitudes = SolicitudReserva.objects.filter(estado='pendiente').order_by('fecha_inicio')
-
 
     if request.method == 'POST':
         solicitud_id = request.POST.get('solicitud_id')
@@ -144,21 +149,32 @@ def validarSolicitudReservaView(request):
                     reverse('pagar_reserva', args=[solicitud.id])
                 )
 
-                # Enviar mail al inquilino
-                send_mail(
+                # Renderizar el contenido HTML del mail
+                html_content = render_to_string('boton_pago.html', {
+                    'usuario': solicitud.inquilino,
+                    'url_pago': link_pago,
+                })
+
+                # Enviar correo con contenido HTML
+                email = EmailMultiAlternatives(
                     subject='Tu reserva fue aprobada - Realizá el pago',
-                    message=f'Tu solicitud fue aceptada. Podés pagarla ingresando aquí:\n{link_pago}',
+                    body='Tu solicitud fue aceptada. Ingresá al siguiente enlace para pagar.',
                     from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[solicitud.inquilino.email]
+                    to=[solicitud.inquilino.email],
                 )
+                email.attach_alternative(html_content, "text/html")
+                email.send()
+
                 solicitud.estado = 'pendiente de pago'
+
             elif accion == 'rechazar':
                 solicitud.estado = 'cancelada'
+
             solicitud.save()
         except SolicitudReserva.DoesNotExist:
-            pass  # Puedes manejar el error si quieres
+            pass  # Manejo opcional del error
 
-        # Recargar la página para mostrar el cambio
+        # Recargar la página con las solicitudes pendientes
         solicitudes = SolicitudReserva.objects.filter(estado='pendiente')
 
     return render(request, 'validar_solicitud_reserva.html', {'solicitudes': solicitudes})

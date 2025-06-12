@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <style>
+        .boton {
+            background-color: #28a745;
+            color: white;
+            padding: 12px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body>
+    <p>Hola {{ usuario.first_name }},</p>
+
+    <p>Tu solicitud de reserva fue aprobada. Hacé clic en el botón para realizar el pago:</p>
+
+    <p>
+        <a href="{{ url_pago }}" class="boton">Pagar ahora</a>
+    </p>
+
+</body>
+
+</html>
