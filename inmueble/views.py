@@ -52,7 +52,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from datetime import timedelta
 import json
 from .models import Inmueble
-from reservas.models import Reserva # Importar el modelo Reserved
+from reservas.models import Reserva, SolicitudReserva # Importar el modelo Reserved
 
 def ver_disponibilidad(request, inmueble_id):
     inmueble = get_object_or_404(Inmueble, id=inmueble_id)
@@ -105,14 +105,30 @@ def dar_alta_inmueble(request):
     return render(request, 'inmueble/dar_alta.html', {'form': formulario})
 
 def eliminar_inmueble(request, id):
-    inmueble = get_object_or_404(Inmueble, pk=id)    
+    inmueble = get_object_or_404(Inmueble, pk=id)
+    # Verifica si tiene reservas confirmadas activas
+    reservas_confirmadas = SolicitudReserva.objects.filter(inmueble=inmueble, estado='confirmada')
     if request.method == 'POST':
+        if reservas_confirmadas.exists():
+            messages.error(request, "No se puede dar de baja el inmueble porque tiene reservas confirmadas.")
+            return redirect('listar_inmuebles')
+        
+        solicitudes_a_cancelar = SolicitudReserva.objects.filter(
+            inmueble=inmueble,
+            estado__in=['pendiente', 'pendiente de pago']
+        )
+        solicitudes_a_cancelar.update(estado='cancelada')
+
         inmueble.estado = 'no disponible'
         inmueble.activo = False
         inmueble.save()
+        messages.success(request, "El inmueble fue dado de baja correctamente.")
         return redirect('listar_inmuebles')
-    return render(request, 'inmueble/confirmar_baja.html',{'inmueble': inmueble})
-
+    # Si solo es GET, muestra la confirmación pero avisa si tiene reservas confirmadas
+    return render(request, 'inmueble/confirmar_baja.html', {
+        'inmueble': inmueble,
+        'tiene_reservas_confirmadas': reservas_confirmadas.exists()
+    })
 from .forms import EditarInmueble
 
 def editar_inmueble(request, id):
