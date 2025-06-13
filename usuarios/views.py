@@ -11,6 +11,10 @@ from django.shortcuts import get_object_or_404
 from django import forms
 from django.core.mail import send_mail
 from django.utils.crypto import get_random_string
+from datetime import timedelta, timezone as dt_timezone
+from django.utils import timezone
+
+
 
 
 def registro(request):
@@ -84,6 +88,7 @@ def login_view(request):
                 print(f"Código de verificación 2FA: {codigo}")  # Para pruebas, eliminar en producción
                 request.session['codigo_2fa'] = codigo
                 request.session['usuario_2fa_id'] = user.id
+                request.session['codigo_2fa_time'] = timezone.now().isoformat()
 
                 send_mail(
                     'Código de verificación 2FA',
@@ -112,6 +117,16 @@ def verificar_2fa(request):
         if form.is_valid():
             codigo_ingresado = form.cleaned_data['codigo']
             codigo_guardado = request.session.get('codigo_2fa')
+            codigo_time_str = request.session.get('codigo_2fa_time')
+
+            if codigo_time_str:
+                codigo_time = timezone.datetime.fromisoformat(codigo_time_str).replace(tzinfo=dt_timezone.utc)
+                if timezone.now() - codigo_time > timedelta(seconds=60):
+                    messages.error(request, "El código ha expirado.")
+                    request.session.pop('codigo_2fa', None)
+                    request.session.pop('codigo_2fa_time', None)
+                    return redirect('login')
+
 
             if codigo_ingresado == codigo_guardado:
                 user_id = request.session.get('usuario_2fa_id')
