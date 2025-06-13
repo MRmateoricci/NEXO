@@ -36,7 +36,7 @@ class RegistroForm(forms.ModelForm):
         max_value=120,
         required=True,
         validators=[validar_mayor_de_edad],
-        help_text="Debes ser mayor de 18 años para registrarte."
+        help_text="Debes tener al menos 18 años para registrarte."
     )
 
     class Meta:
