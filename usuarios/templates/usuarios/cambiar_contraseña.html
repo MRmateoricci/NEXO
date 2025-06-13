@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Cambiar Contraseña{% endblock %}
+
+{% block content %}
+
+<form method="post">
+    {% csrf_token %}
+    <div style="margin-bottom: 2em;">
+        <label>Contraseña actual:</label>
+        <input type="password" name="contraseña_actual" required>
+    </div>
+    <div style="margin-bottom: 2em;">
+        <label>Nueva contraseña:</label>
+        <input type="password" name="nueva_contraseña" required>
+    </div>
+    <button type="submit">Cambiar contraseña</button>
+</form>
+
+{% endblock %}

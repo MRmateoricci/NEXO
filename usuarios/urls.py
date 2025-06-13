@@ -19,6 +19,6 @@ urlpatterns = [
     path('deshabilitar/<int:usuario_id>/', views.deshabilitar_usuario, name='deshabilitar_usuario'),
     path('habilitar/<int:usuario_id>/', views.habilitar_usuario, name='habilitar_usuario'),
     path('tarjeta/nueva/', registrar_tarjeta_view, name='registrar_tarjeta'),
-
+    path('password_change/', views.password_change_view, name='password_change'),
 
 ]

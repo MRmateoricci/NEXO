@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, views as auth_views
+from django.contrib.auth import update_session_auth_hash
 from django.contrib import messages
 
 from reservas.models import TarjetaPago
@@ -232,3 +233,22 @@ def registrar_tarjeta_view(request):
         return render(request, 'usuarios/tarjeta_registrada.html')
 
     return render(request, 'usuarios/registrar_tarjeta.html')
+
+def password_change_view(request):
+    if request.method == 'POST':
+        actual = request.POST.get('contraseña_actual')
+        nueva = request.POST.get('nueva_contraseña')
+        user = request.user
+        if not user.check_password(actual):
+            messages.error(request, "La contraseña actual es incorrecta.")
+        elif not nueva:
+            messages.error(request, "La nueva contraseña no puede estar vacía.")
+        elif nueva == actual:
+            messages.error(request, "La nueva contraseña no puede ser igual a la actual.")
+        else:
+            user.set_password(nueva)
+            user.save()
+            update_session_auth_hash(request, user)  # Mantiene la sesión activa
+            messages.success(request, "Contraseña cambiada correctamente.")
+            return redirect('editar_usuario')
+    return render(request, 'usuarios/cambiar_contraseña.html')

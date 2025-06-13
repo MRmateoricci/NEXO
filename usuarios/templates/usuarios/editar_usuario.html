@@ -17,9 +17,14 @@
             {% else %}
                 {{ field }}
             {% endif %}
-            {% endfor %}
-            <p>Rol: {{ form.instance.get_rol_display }}</p>
-        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        {% endfor %}
+        <p>Rol: {{ form.instance.get_rol_display }}</p>
+        <div style="margin-bottom: 1em;">
+          <a href="{% url 'password_change' %}" class="btn btn-primary">Cambiar contraseña</a>
+        </div>
+        <div>
+          <button type="submit" class="btn btn-success">Guardar cambios</button>
+        </div>
     </form>
 
 </div>
