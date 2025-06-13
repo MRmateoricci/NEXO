@@ -74,6 +74,14 @@
         <p>© 2025 Nexo</p>
     </footer>
 
+    <script>
+        setTimeout(function() {
+            document.querySelectorAll('div > p[style*="background-color"]').forEach(function(msg) {
+                msg.style.display = 'none';
+            });
+        }, 5000);
+    </script>
+
 </body>
 
 </html>

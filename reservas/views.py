@@ -21,6 +21,7 @@ from django.conf import settings
 from django.shortcuts import render
 from django.contrib.auth.decorators import user_passes_test
 from .models import SolicitudReserva
+from django.contrib import messages
 
 def es_empleado(usuario):
     return getattr(usuario, 'rol', '').lower() == 'empleado'
@@ -117,7 +118,8 @@ def crearReservaView(request, inmueble_id):
             }, status=500)
 
     return render(request, 'crear_reserva.html', {
-        'fechas_ocupadas': fechas_ocupadas
+        'fechas_ocupadas': fechas_ocupadas,
+        'dni_inquilino':request.user.dni
     })
 
 def eliminarReservaView(request):
@@ -136,14 +138,16 @@ def eliminarReservaView(request):
 
 #@user_passes_test(es_empleado)
 def validarSolicitudReservaView(request):
-    solicitudes = SolicitudReserva.objects.filter(estado='pendiente').order_by('fecha_inicio')
-
+    solicitudesPendientes = SolicitudReserva.objects.filter(estado='pendiente').order_by('fecha_inicio')
+    SolicitudesPendientesDePago = SolicitudReserva.objects.filter(estado='pendiente de pago').order_by('fecha_inicio')
+    solicitudes = list(solicitudesPendientes) + list(SolicitudesPendientesDePago)   
     if request.method == 'POST':
         solicitud_id = request.POST.get('solicitud_id')
         accion = request.POST.get('accion')
         try:
             solicitud = SolicitudReserva.objects.get(id=solicitud_id)
             if accion == 'aceptar':
+                messages.success(request, "Solicitud aceptada correctamente.")
                 # Generar link de pago
                 link_pago = request.build_absolute_uri(
                     reverse('pagar_reserva', args=[solicitud.id])
@@ -168,6 +172,7 @@ def validarSolicitudReservaView(request):
                 solicitud.estado = 'pendiente de pago'
 
             elif accion == 'rechazar':
+                messages.error(request, "Solicitud rechazada correctamente.")
                 solicitud.estado = 'cancelada'
 
             solicitud.save()
@@ -175,7 +180,9 @@ def validarSolicitudReservaView(request):
             pass  # Manejo opcional del error
 
         # Recargar la página con las solicitudes pendientes
-        solicitudes = SolicitudReserva.objects.filter(estado='pendiente')
+        solicitudesPendientes = SolicitudReserva.objects.filter(estado='pendiente').order_by('fecha_inicio')
+        SolicitudesPendientesDePago = SolicitudReserva.objects.filter(estado='pendiente de pago').order_by('fecha_inicio')
+        solicitudes = list(solicitudesPendientes) + list(SolicitudesPendientesDePago)  
 
     return render(request, 'validar_solicitud_reserva.html', {'solicitudes': solicitudes})
 
@@ -200,8 +207,9 @@ def buscar_usuarios_view(request):
     
     if not query:
         return JsonResponse([], safe=False)
-
-    usuarios = Usuario.objects.filter(
+    inquilinos = Usuario.objects.filter(
+        rol='inquilino')
+    usuarios = inquilinos.filter(
         Q(first_name__icontains=query) | 
         Q(last_name__icontains=query) |
         Q(email__icontains=query) |

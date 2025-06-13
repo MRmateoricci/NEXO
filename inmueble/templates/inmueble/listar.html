@@ -2,6 +2,7 @@
 
 {% block content %}
 
+
 <style>
 .inmueble-item {
     display: flex;
@@ -48,7 +49,7 @@
     <h1>Lista de Inmuebles</h1>
 </div>
 {% if user.is_authenticated %}
-    {% if user.rol == "empleado" or user.rol == "admin" %}
+    {% if user.rol == "admin" %}
         <a href="{% url 'alta_inmueble' %}" style="
         display: inline-block;
         background-color: gainsboro;
@@ -118,14 +119,14 @@
         <p><strong>Estado:</strong> {{ inmueble.estado }}</p>
         <p class="inmueble-actions">
           <a href="{% url 'ver_detalle_inmueble' inmueble_id=inmueble.id %}">Ver Detalle</a>
-          {% if user.is_authenticated %}
+          {% if user.is_authenticated and user.rol == "inquilino" %}
             | <a href="{% url 'crear_reserva' inmueble_id=inmueble.id %}">Reservar</a>
-          {% else %}
-            | <a href="{% url 'login' %}?next={% url 'crear_reserva' inmueble_id=inmueble.id %}">Reservar</a>
           {% endif %}
           {% if user.is_authenticated and user.rol == "admin" or user.rol == "empleado" %}
-            | <a href="{% url 'editar_inmueble' id=inmueble.id %}">Editar</a>
             | <a href="{% url 'cambiar_estado_inmueble' inmueble.id %}">Mantenimiento</a>
+          {% endif %}
+          {% if user.is_authenticated and user.rol == "admin" %}
+            | <a href="{% url 'editar_inmueble' id=inmueble.id %}">Editar</a>
             | <a href="{% url 'eliminar_inmueble' id=inmueble.id %}" style="color:red;">Eliminar</a>
           {% endif %}
         </p>

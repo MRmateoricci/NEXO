@@ -7,9 +7,11 @@ class AltaInmueble(forms.ModelForm):
         exclude = ['fecha_inicio_inactividad', 'fecha_fin_inactividad','activo', 'estado']
 
 class EditarInmueble(forms.ModelForm):
+    foto = forms.ImageField()
     class Meta:
         model = Inmueble
-        exclude = ['fecha_inicio_inactividad', 'fecha_fin_inactividad','activo', 'estado']
+        exclude = ['tipo','titulo','fecha_inicio_inactividad','fecha_fin_inactividad','activo', 'estado']
+    
 
 from datetime import date
 

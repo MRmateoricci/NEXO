@@ -150,6 +150,8 @@
             <div class="form-field">
                 <label>Inquilinos agregados:</label>
                 <div id="inquilinos-list"></div>
+                <div id="inquilino-error" style="color: #dc3545; margin-top: 8px;"></div>
+                <div id="inquilino-success" style="color: #28a745; margin-top: 8px;"></div>
             </div>
         </div>
 
@@ -166,6 +168,10 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     $(document).ready(function () {
+        const dniInquilino = "{{dni_inquilino}}"
+        let inquilinos = [];
+        window.inquilinos = inquilinos;
+        window.actualizarListaInquilinos = actualizarListaInquilinos;
         // Configuración de Flatpickr para fechas
         const fechasOcupadas = JSON.parse(document.getElementById('fechas-ocupadas-data').textContent);
         const rangosBloqueados = fechasOcupadas.map(f => ({
@@ -196,7 +202,16 @@
                     let dd = String(siguiente.getDate()).padStart(2, '0');
                     let minFin = `${yyyy}-${mm}-${dd}`;
 
+                    // Calcula la fecha máxima de fin (30 días después de inicio)
+                    let maxFinDate = new Date(inicio);
+                    maxFinDate.setDate(inicio.getDate() + 30);
+                    let yyyyMax = maxFinDate.getFullYear();
+                    let mmMax = String(maxFinDate.getMonth() + 1).padStart(2, '0');
+                    let ddMax = String(maxFinDate.getDate()).padStart(2, '0');
+                    let maxFin = `${yyyyMax}-${mmMax}-${ddMax}`;
+
                     fechaFinPicker.set("minDate", minFin);
+                    fechaFinPicker.set("maxDate", maxFin);
 
                     // Encuentra la primera fecha de inicio ocupada posterior a la seleccionada
                     let fechaLimite = null;
@@ -237,13 +252,20 @@
             }
         });
 
-        // Array para almacenar inquilinos temporalmente
-        let inquilinos = [];
 
         // Agregar usuario registrado
         $('#agregar-usuario').click(function () {
             const usuario = $('#buscar-usuario').select2('data')[0];
             if (usuario) {
+                const yaExiste = inquilinos.some(inq =>
+                    (inq.tipo === 'existente' && inq.id == usuario.id) ||
+                    (inq.tipo === 'nuevo' && inq.dni === usuario.dni)
+                );
+                if (yaExiste) {
+                    a$('#inquilino-error').text('No puede agregar dos inquilinos con el mismo DNI.');
+                    setTimeout(function() { $('#inquilino-error').text(''); }, 5000);
+                    return;
+                }
                 inquilinos.push({
                     tipo: 'existente',
                     id: usuario.id,
@@ -262,6 +284,17 @@
             const edad = $('#edad-inquilino').val();
 
             if (nombre && dni && edad) {
+                if (dni === dniInquilino) {
+                    $('#inquilino-error').text('No puede agregar a un inquilino con su mismo DNI.');
+                    setTimeout(function() { $('#inquilino-error').text(''); }, 5000);
+                    return;
+                }
+                const yaExiste = inquilinos.some(inq => inq.dni === dni);
+                if (yaExiste) {
+                    $('#inquilino-error').text('No puede agregar dos inquilinos con el mismo DNI.');
+                    setTimeout(function() { $('#inquilino-error').text(''); }, 5000);
+                    return;
+                }
                 inquilinos.push({
                     tipo: 'nuevo',
                     nombre: nombre,
@@ -341,45 +374,15 @@
 
     // Función global para eliminar inquilinos
     function eliminarInquilino(index) {
-        // Obtener array actual de inquilinos
-        const inquilinos = [];
-        $('[name^="inquilinos_"]').each(function () {
-            if ($(this).attr('name').includes('nuevos')) {
-                inquilinos.push(JSON.parse($(this).val()));
-            } else {
-                inquilinos.push({
-                    tipo: 'existente',
-                    id: $(this).val()
-                });
-            }
-        });
-
-        // Eliminar el elemento seleccionado
-        inquilinos.splice(index, 1);
-
-        // Limpiar y regenerar
-        $('[name^="inquilinos_"]').remove();
-        const lista = $('#inquilinos-list').empty();
-
-        // Volver a agregar los restantes
-        inquilinos.forEach((inq, idx) => {
-            lista.append(`
-                <div class="inquilino-item">
-                    ${inq.nombre} (DNI: ${inq.dni}${inq.tipo === 'nuevo' ? ', Edad: ' + inq.edad : ''})
-                    <button type="button" onclick="eliminarInquilino(${idx})">×</button>
-                </div>
-            `);
-
-            if (inq.tipo === 'existente') {
-                $('#reserva-form').append(
-                    `<input type="hidden" name="inquilinos_existentes" value="${inq.id}">`
-                );
-            } else {
-                $('#reserva-form').append(
-                    `<input type="hidden" name="inquilinos_nuevos" value='${JSON.stringify(inq)}'>`
-                );
-            }
-        });
+    // Accede al array global (que está en el scope de jQuery ready)
+    // Llama a la función de actualización que también está en ese scope
+    // Por eso, debes hacer que actualizarListaInquilinos sea global también:
+        if (window.inquilinos && window.actualizarListaInquilinos) {
+            window.inquilinos.splice(index, 1);
+            window.actualizarListaInquilinos();
+            $('#inquilino-success').text('Inquilino eliminado con éxito');
+            setTimeout(function() { $('#inquilino-success').text(''); }, 5000);
+        }
     }
 </script>
 
