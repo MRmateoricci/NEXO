@@ -10,6 +10,7 @@ class EditarInmueble(forms.ModelForm):
     class Meta:
         model = Inmueble
         exclude = ['tipo','titulo','fecha_inicio_inactividad','fecha_fin_inactividad','activo', 'estado']
+    
 
 from datetime import date
 
