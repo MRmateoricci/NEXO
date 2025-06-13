@@ -4,12 +4,17 @@
 
 <h1 style="text-align: center;">Validar Solicitudes de Reserva</h1>
 <style>
-.form-container {
+.columns-container {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+.form-container, .pendiente-pago-container {
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    min-height: 60vh;
 }
 ul {
     list-style: none;
@@ -26,21 +31,46 @@ li {
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 </style>
-<ul>
-    {% for solicitud in solicitudes %}
-        <li>
-            {{ solicitud.inquilino }} - {{ solicitud.inmueble }}<br>
-            {{ solicitud.fecha_inicio }} a {{ solicitud.fecha_fin }}
-            <form method="post" style="display:inline;">
-                {% csrf_token %}
-                <input type="hidden" name="solicitud_id" value="{{ solicitud.id }}">
-                <button type="submit" name="accion" value="aceptar">Aceptar</button>
-                <button type="submit" name="accion" value="rechazar">Rechazar</button>
-            </form>
-        </li>
-    {% empty %}
-        <li>No hay solicitudes pendientes.</li>
-    {% endfor %}
-</ul>
+
+<div class="columns-container">
+    <div class="form-container">
+        <h2>Pendientes de Aceptar/Rechazar</h2>
+        <ul>
+            {% for solicitud in solicitudes %}
+                {% if solicitud.estado == "pendiente" %}
+                <li>
+                    {{ solicitud.inquilino }} - {{ solicitud.inmueble }}<br>
+                    {{ solicitud.fecha_inicio }} a {{ solicitud.fecha_fin }}
+                    <form method="post" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="solicitud_id" value="{{ solicitud.id }}">
+                        <button type="submit" name="accion" value="aceptar">Aceptar</button>
+                        <button type="submit" name="accion" value="rechazar">Rechazar</button>
+                    </form>
+                </li>
+                {% endif %}
+            {% empty %}
+                <li>No hay solicitudes pendientes.</li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="pendiente-pago-container">
+        <h2>Pendientes de Pago</h2>
+        <ul>
+            {% for solicitud in solicitudes %}
+                {% if solicitud.estado == "pendiente de pago" %}
+                <li>
+                    {{ solicitud.inquilino }} - {{ solicitud.inmueble }}<br>
+                    {{ solicitud.fecha_inicio }} a {{ solicitud.fecha_fin }}
+                </li>
+                {% endif %}
+            {% empty %}
+                <li>No hay solicitudes pendientes de pago.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+
 
 {% endblock %}

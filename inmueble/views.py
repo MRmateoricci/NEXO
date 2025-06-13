@@ -2,6 +2,7 @@ from django.shortcuts import render,redirect, get_object_or_404
 from .models import Inmueble
 from django.db.models import Q
 from django.core.paginator import Paginator
+from django.contrib import messages
 
 def listar_inmuebles(request):
     # Parámetros GET (con valores por defecto y sanitización)
@@ -161,6 +162,7 @@ def cambiar_estado_inmueble(request, id):
         if form.is_valid():
             inmueble = form.save(commit=False)
             inmueble.save()
+            messages.success(request, "El mantenimiento se cargo correctamente.")
             return redirect('listar_inmuebles')  
     else:
         form = CambioEstadoForm(instance=inmueble)
