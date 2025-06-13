@@ -117,18 +117,16 @@ def verificar_2fa(request):
         if form.is_valid():
             codigo_ingresado = form.cleaned_data['codigo']
             codigo_guardado = request.session.get('codigo_2fa')
-            codigo_time = request.session.get('codigo_2fa_time')
-            tiempo_actual = timezone.now().timestamp()
-            if not codigo_ingresado == codigo_guardado:
-                messages.error(request, "Código incorrecto.")
-            if codigo_time:
-                if tiempo_actual - codigo_time > 60:
-                    messages.error(request, "El código ha expirado. Por favor, vuelve a iniciar sesión.")
-                    # Limpia la sesión 
+            codigo_time_str = request.session.get('codigo_2fa_time')
+
+            if codigo_time_str:
+                codigo_time = timezone.datetime.fromisoformat(codigo_time_str).replace(tzinfo=dt_timezone.utc)
+                if timezone.now() - codigo_time > timedelta(seconds=60):
+                    messages.error(request, "El código ha expirado.")
                     request.session.pop('codigo_2fa', None)
-                    request.session.pop('usuario_2fa_id', None)
                     request.session.pop('codigo_2fa_time', None)
                     return redirect('login')
+
 
             if codigo_ingresado == codigo_guardado:
                 user_id = request.session.get('usuario_2fa_id')
