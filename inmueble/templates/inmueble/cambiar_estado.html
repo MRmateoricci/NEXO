@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
-  <h2>Fechas de mantenimiento: </h2>
+  <h2>Ingrese fechas de mantenimiento del inmueble: <br>
+  {{ inmueble.titulo }} </h2>
   
   <form method="post">
     {% csrf_token %}

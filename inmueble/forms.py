@@ -2,15 +2,21 @@ from django import forms
 from .models import Inmueble
 
 class AltaInmueble(forms.ModelForm):
+    foto = forms.ImageField(required=True, 
+        error_messages={'required': 'El inmueble debe tener una foto.'},
+        widget=forms.FileInput())
+    
     class Meta:
         model = Inmueble
         exclude = ['fecha_inicio_inactividad', 'fecha_fin_inactividad','activo', 'estado']
 
 class EditarInmueble(forms.ModelForm):
-    foto = forms.ImageField()
+    foto = forms.ImageField(required=True, 
+        error_messages={'required': 'El inmueble debe tener una foto.'})
+    
     class Meta:
         model = Inmueble
-        exclude = ['tipo','titulo','fecha_inicio_inactividad','fecha_fin_inactividad','activo', 'estado']
+        exclude = ['calle','numero','ciudad','provincia','pais','tipo','titulo','fecha_inicio_inactividad','fecha_fin_inactividad','activo', 'estado']
     
 
 from datetime import date

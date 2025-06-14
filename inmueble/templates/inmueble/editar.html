@@ -1,12 +1,25 @@
 {% extends 'base.html' %}
+{% block content %}
+  <h1>Editar Inmueble</h1>
 
-{% block content%}
-
-<h1>Editar Inmueble</h1>
-<form method="post" enctype="multipart/form-data">
+  <form method="post"
+        enctype="multipart/form-data"
+        novalidate>
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Guardar</button>
-</form>
+    {{ form.non_field_errors }}
 
+    {% for field in form %}
+      <div class="form-group">
+        {{ field.label_tag }}<br>
+        {{ field }}<br>
+        {% for err in field.errors %}
+          <div style="color: red; font-size:0.9em;">
+            {{ err }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+
+    <button type="submit">Guardar </button>
+  </form>
 {% endblock %}

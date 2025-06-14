@@ -9,6 +9,7 @@
         <tr>
             <th>ID</th>
             <th>Nombre</th>
+            <th>Rol</th>
             <th>Correo Electrónico</th>
             <th>Fecha de Registro</th>
             <th>Acciones</th>
@@ -19,6 +20,7 @@
         <tr>
             <td>{{ usuario.id }}</td>
             <td>{{ usuario.first_name }} {{ usuario.last_name }}</td>
+            <td>{{ usuario.rol|capfirst }}</td>
             <td>{{ usuario.email }}</td>
             <td>{{ usuario.date_joined|date:"Y-m-d" }}</td>
             <td>
