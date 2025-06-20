@@ -5,27 +5,49 @@
   
   <form method="post">
     {% csrf_token %}
-    <div>
+    {{ form.non_field_errors }}
+    <p>
       {{ form.fecha_inicio_inactividad.label_tag }}<br>
       {{ form.fecha_inicio_inactividad }}
-      {% if form.fecha_inicio_inactividad.errors %}
-        <div class="error">{{ form.fecha_inicio_inactividad.errors }}</div>
-      {% endif %}
-    </div>
-
-    <div>
+      {% for e in form.fecha_inicio_inactividad.errors %}
+        <span style="color:red">{{ e }}</span>
+      {% endfor %}
+    </p>
+    <p>
       {{ form.fecha_fin_inactividad.label_tag }}<br>
       {{ form.fecha_fin_inactividad }}
-      {% if form.fecha_fin_inactividad.errors %}
-        <div class="error">{{ form.fecha_fin_inactividad.errors }}</div>
-      {% endif %}
-    </div>
-    
-    {% if form.non_field_errors %}
-      <div class="error">{{ form.non_field_errors }}</div>
-    {% endif %}
-
+      {% for e in form.fecha_fin_inactividad.errors %}
+        <span style="color:red">{{ e }}</span>
+      {% endfor %}
+    </p>
     <button type="submit">Guardar fechas de mantenimiento</button>
     <a href="{% url 'listar_inmuebles' %}">Cancelar</a>
   </form>
+
+  {# 1 Inyectamos un script con JSON puro y seguro #}
+  {{ fechas_ocupadas_json|json_script:"ocupadas-data" }}
+
+  {# 2 Incluimos Flatpickr #}
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+  <script>
+    // 3) Leemos el contenido del tag <script type="application/json">
+    const disabledDates = JSON.parse(
+      document.getElementById('ocupadas-data').textContent
+    );
+
+    // 4) Inicializamos Flatpickr pasándole ese array
+    flatpickr("input[name='fecha_inicio_inactividad']", {
+      dateFormat: "Y-m-d",
+      disable: disabledDates,
+      minDate: "today"
+    });
+    flatpickr("input[name='fecha_fin_inactividad']", {
+      dateFormat: "Y-m-d",
+      disable: disabledDates,
+      minDate: "today"
+    });
+  </script>
 {% endblock %}

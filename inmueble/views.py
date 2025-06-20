@@ -49,7 +49,7 @@ def listar_inmuebles(request):
 #HU ver disponibilidad de inmueble
 from django.shortcuts import render, get_object_or_404
 from django.core.serializers.json import DjangoJSONEncoder
-from datetime import timedelta
+import datetime
 import json
 from .models import Inmueble
 from reservas.models import Reserva, SolicitudReserva # Importar el modelo Reserved
@@ -99,40 +99,40 @@ def dar_alta_inmueble(request):
         formulario = AltaInmueble(request.POST, request.FILES)
         if formulario.is_valid():
             formulario.save()
+            messages.success(request, "Inmueble dado de alta correctamente.")
             return redirect('listar_inmuebles')
     else:
         formulario = AltaInmueble()
     return render(request, 'inmueble/dar_alta.html', {'form': formulario})
 
+from django.contrib import messages
+
 def eliminar_inmueble(request, id):
     inmueble = get_object_or_404(Inmueble, pk=id)
-    # Verifica si tiene reservas confirmadas activas
-    reservas_confirmadas = SolicitudReserva.objects.filter(inmueble=inmueble, estado='confirmada')
-    if request.method == 'POST':
-        if reservas_confirmadas.exists():
-            messages.error(request, "No se puede dar de baja el inmueble porque tiene reservas confirmadas.")
-            return redirect('listar_inmuebles')
-        
-        solicitudes_a_cancelar = SolicitudReserva.objects.filter(
-            inmueble=inmueble,
-            estado__in=['pendiente', 'pendiente de pago']
+    reservas = SolicitudReserva.objects.filter(inmueble=inmueble).exclude(estado='cancelada')
+    if reservas.exists():
+        messages.error(request,
+            "El inmueble tiene solicitudes de reserva. No se puede darlo de baja."
         )
-        solicitudes_a_cancelar.update(estado='cancelada')
-
-        inmueble.estado = 'no disponible'
-        inmueble.activo = False
-        inmueble.save()
-        messages.success(request, "El inmueble fue dado de baja correctamente.")
         return redirect('listar_inmuebles')
-    # Si solo es GET, muestra la confirmación pero avisa si tiene reservas confirmadas
-    return render(request, 'inmueble/confirmar_baja.html', {
-        'inmueble': inmueble,
-        'tiene_reservas_confirmadas': reservas_confirmadas.exists()
-    })
+
+    if request.method == 'POST':
+        inmueble.activo = False
+        inmueble.estado = 'No disponible'
+        inmueble.save()
+        messages.success(request, "Inmueble dado de baja correctamente.")
+        return redirect('listar_inmuebles')
+    return render(request,'inmueble/confirmar_baja.html',{'inmueble': inmueble})
+
 from .forms import EditarInmueble
 
 def editar_inmueble(request, id):
     inmueble = get_object_or_404(Inmueble,pk=id)
+    reservas = SolicitudReserva.objects.filter(inmueble=inmueble).exclude(estado='cancelada')
+    if reservas.exists():
+        messages.error(request, "El inmueble tiene solicitudes de reserva. No se pueden realizar cambios.")
+        return redirect('listar_inmuebles')
+    
     if request.method == "POST":
         form = EditarInmueble(request.POST, request.FILES, instance=inmueble)
         if form.is_valid():
@@ -172,7 +172,16 @@ def activar_inmueble(request, id):
 from .forms import CambioEstadoForm
 
 def cambiar_estado_inmueble(request, id):
-    inmueble = get_object_or_404(Inmueble, pk=id) 
+    inmueble = get_object_or_404(Inmueble, pk=id)
+    reservas = SolicitudReserva.objects.filter(inmueble=inmueble).exclude(estado='cancelada')
+    fechas_ocupadas = []
+    for r in reservas:
+        inicio = r.fecha_inicio
+        fin    = r.fecha_fin
+        dias   = (fin - inicio).days
+        for i in range(dias + 1):
+            fechas_ocupadas.append((inicio + datetime.timedelta(days=i)).isoformat())
+    
     if request.method == 'POST':
         form = CambioEstadoForm(request.POST, instance=inmueble)
         if form.is_valid():
@@ -186,4 +195,5 @@ def cambiar_estado_inmueble(request, id):
     return render(request, 'inmueble/cambiar_estado.html', {
         'form': form,
         'inmueble': inmueble,
+        'fechas_ocupadas_json': fechas_ocupadas,
     })
