@@ -45,7 +45,7 @@ def crearReservaView(request, inmueble_id):
         fechas_ocupadas.append({
             'fecha_inicio': inmueble.fecha_inicio_inactividad.strftime('%Y-%m-%d'),
             'fecha_fin'   : inmueble.fecha_fin_inactividad.strftime('%Y-%m-%d'),
-        })
+        }) 
 
     if request.method == 'POST':
         fecha_inicio_str = request.POST.get('fecha_inicio')
@@ -119,7 +119,8 @@ def crearReservaView(request, inmueble_id):
 
     return render(request, 'crear_reserva.html', {
         'fechas_ocupadas': fechas_ocupadas,
-        'dni_inquilino':request.user.dni
+        'dni_inquilino':request.user.dni,
+        'min_dias_reserva': inmueble.minimo_dias_reserva,
     })
 
 def eliminarReservaView(request):

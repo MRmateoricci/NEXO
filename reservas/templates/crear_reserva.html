@@ -168,6 +168,8 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     $(document).ready(function () {
+        const minDiasReserva = "{{ min_dias_reserva }}";
+        const maxDiasReserva = "{{ max_dias_reserva }}";
         const dniInquilino = "{{dni_inquilino}}"
         let inquilinos = [];
         window.inquilinos = inquilinos;
@@ -194,7 +196,7 @@
                 if (selectedDates.length > 0) {
                     let inicio = new Date(selectedDates[0]);
                     let siguiente = new Date(inicio);
-                    siguiente.setDate(inicio.getDate() + 1);
+                    siguiente.setDate(inicio.getDate() + minDiasReserva);
 
                     // Formatea la fecha a YYYY-MM-DD
                     let yyyy = siguiente.getFullYear();
@@ -204,7 +206,7 @@
 
                     // Calcula la fecha máxima de fin (30 días después de inicio)
                     let maxFinDate = new Date(inicio);
-                    maxFinDate.setDate(inicio.getDate() + 30);
+                    maxFinDate.setDate(inicio.getDate() + maxDiasReserva);
                     let yyyyMax = maxFinDate.getFullYear();
                     let mmMax = String(maxFinDate.getMonth() + 1).padStart(2, '0');
                     let ddMax = String(maxFinDate.getDate()).padStart(2, '0');

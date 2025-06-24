@@ -3,6 +3,7 @@ from .models import Inmueble
 from django.db.models import Q
 from django.core.paginator import Paginator
 from django.contrib import messages
+from datetime import timedelta
 
 def listar_inmuebles(request):
     # Parámetros GET (con valores por defecto y sanitización)

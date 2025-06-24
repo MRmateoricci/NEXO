@@ -19,6 +19,8 @@ class Inmueble(models.Model):
     precio_diario = models.DecimalField(max_digits=10, decimal_places=2)
     fecha_inicio_inactividad = models.DateField(null=True,blank=True,)
     fecha_fin_inactividad = models.DateField(null=True,blank=True,)
+    minimo_dias_reserva = models.IntegerField(default=1)
+    maximo_dias_reserva = models.IntegerField(default=30)
     foto = models.ImageField(
         upload_to='inmuebles/',
         null=True,
