@@ -121,6 +121,7 @@ def crearReservaView(request, inmueble_id):
         'fechas_ocupadas': fechas_ocupadas,
         'dni_inquilino':request.user.dni,
         'min_dias_reserva': inmueble.minimo_dias_reserva,
+        'max_dias_reserva': inmueble.maximo_dias_reserva,
     })
 
 def eliminarReservaView(request):
