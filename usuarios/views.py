@@ -14,7 +14,7 @@ from django.core.mail import send_mail
 from django.utils.crypto import get_random_string
 from datetime import timedelta, timezone as dt_timezone
 from django.utils import timezone
-
+from reservas.models import SolicitudReserva
 
 
 
@@ -197,6 +197,10 @@ def deshabilitar_usuario(request, usuario_id):
     if request.user.rol not in  ['admin', 'empleado']:
         return redirect('home')
     usuario = get_object_or_404(Usuario, id=usuario_id)
+    res_pendientes = SolicitudReserva.objects.filter(inquilino = usuario).exclude(estado='cancelada')
+    if res_pendientes:
+        messages.error(request, "El usuario tiene solicitudes de reservas pendientes. No se lo puede deshabilitar")
+        return redirect('lista_usuarios')
     usuario.is_active = False
     usuario.save()
     messages.success(request, f'Usuario {usuario.email} deshabilitado correctamente.')

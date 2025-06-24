@@ -1,9 +1,19 @@
 {% extends 'base.html' %}
+
 {% block content%}
-<h1>Alta de un Inmueble</h1>
-<form method="post" enctype="multipart/form-data">
-  {% csrf_token %}
-  {{ form.as_p }}
+    <h1>Dar de alta Inmueble</h1>
+    <form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    {% for field in form %}
+    <p>
+      {{ field.label_tag }}<br>
+      {{ field }}
+      {% for err in field.errors %}
+        <span class="error" style="color:red;">{{ err }}</span><br>
+      {% endfor %}
+    </p>
+  {% endfor %}
   <button type="submit">Dar de Alta Inmueble</button>
 </form>
+
 {% endblock %}

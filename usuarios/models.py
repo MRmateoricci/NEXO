@@ -3,9 +3,9 @@ from django.db import models
 
 class Usuario(AbstractUser):
     ROLES = (
-        ('admin', 'Admin'),
-        ('inquilino', 'Inquilino'),
-        ('empleado', 'Empleado'),
+        ('Admin', 'Admin'),
+        ('Inquilino', 'Inquilino'),
+        ('Empleado', 'Empleado'),
     )
     email = models.EmailField(unique=True, blank=False, null=False)
     dni = models.CharField(max_length=8, unique=True, verbose_name='DNI')

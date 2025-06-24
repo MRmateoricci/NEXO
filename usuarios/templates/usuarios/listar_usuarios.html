@@ -9,9 +9,12 @@
         <tr>
             <th>ID</th>
             <th>Nombre</th>
+            <th>Rol</th>
             <th>Correo Electrónico</th>
             <th>Fecha de Registro</th>
-            <th>Acciones</th>
+            {% if user.rol == 'admin' %}
+                <th>Acciones</th>
+            {% endif %}
         </tr>
     </thead>
     <tbody>
@@ -19,14 +22,14 @@
         <tr>
             <td>{{ usuario.id }}</td>
             <td>{{ usuario.first_name }} {{ usuario.last_name }}</td>
+            <td>{{ usuario.rol|capfirst }}</td>
             <td>{{ usuario.email }}</td>
             <td>{{ usuario.date_joined|date:"Y-m-d" }}</td>
             <td>
                 {% if user.rol == 'admin' %}
-                    
-                    {% if usuario.is_active %}
+                    {% if usuario.is_active and usuario.rol != 'admin' %}
                         <a href="{% url 'deshabilitar_usuario' usuario.id %}">Deshabilitar</a>
-                    {% else %}
+                    {% elif not usuario.is_active and usuario.rol != 'admin'  %}
                         <a href="{% url 'habilitar_usuario' usuario.id %}">Habilitar</a>
                     {% endif %}
                 {% endif %}

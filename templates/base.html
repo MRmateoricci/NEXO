@@ -11,13 +11,19 @@
     {% if messages %}
     <div>
         {% for message in messages %}
-        {% if message.tags == 'success' %}
-        <p style="background-color: green; color: white; padding: 8px; border-radius: 4px;">{{ message }}</p>
-        {% elif message.tags == 'error' %}
-        <p style="background-color: red; color: white; padding: 8px; border-radius: 4px;">{{ message }}</p>
-        {% else %}
-        <p style="background-color: gray; color: white; padding: 8px; border-radius: 4px;">{{ message }}</p>
-        {% endif %}
+            {% if message.level == 40 %}
+                <p style="background-color: #fe0000; color: white; padding:8px; border-radius:4px;">
+                {{ message }}
+                </p>
+            {% elif message.level == 25 %}
+                <p style="background-color: green; color: white; padding:8px; border-radius:4px;">
+                {{ message }}
+                </p>
+            {% else %}
+                <p style="background-color: gray; color: white; padding:8px; border-radius:4px;">
+                {{ message }}
+                </p>
+            {% endif %}
         {% endfor %}
     </div>
     {% endif %}
@@ -85,5 +91,4 @@
     </script>
 
 </body>
-
 </html>
