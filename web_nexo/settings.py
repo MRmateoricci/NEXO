@@ -134,8 +134,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Looking to send emails in production? Check out our Email API/SMTP product!
 EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
-EMAIL_HOST_USER = 'c54cb603a0a32a'
-EMAIL_HOST_PASSWORD = '07662b3490dd66'
+EMAIL_HOST_USER = '67554c80cd25d6'
+EMAIL_HOST_PASSWORD = '160b5c59a999cc'
 EMAIL_PORT = '2525'
 
 MEDIA_URL = '/media/'

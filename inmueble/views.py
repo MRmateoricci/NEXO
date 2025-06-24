@@ -99,6 +99,7 @@ def dar_alta_inmueble(request):
         formulario = AltaInmueble(request.POST, request.FILES)
         if formulario.is_valid():
             formulario.save()
+            messages.success(request, "inmueble dado de alta correctamente.")
             return redirect('listar_inmuebles')
     else:
         formulario = AltaInmueble()
@@ -137,6 +138,7 @@ def editar_inmueble(request, id):
         form = EditarInmueble(request.POST, request.FILES, instance=inmueble)
         if form.is_valid():
             form.save()
+            messages.success(request, "El inmueble se editó correctamente.")
             return redirect('listar_inmuebles')
     else:
         form = EditarInmueble(instance=inmueble)
@@ -163,6 +165,7 @@ def activar_inmueble(request, id):
         # Si usas campo 'estado', podrías volver a setearlo:
         # inmueble.estado = 'activo'
         inmueble.save()
+        messages.success(request, "El inmueble ha sido reactivado correctamente.")
         return redirect('listar_inmuebles_inactivos')
     
     return render(request, 'inmueble/confirmar_activacion.html', {

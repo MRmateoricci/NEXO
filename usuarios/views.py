@@ -136,7 +136,7 @@ def verificar_2fa(request):
 
                 request.session.pop('codigo_2fa', None)
                 request.session.pop('usuario_2fa_id', None)
-
+                messages.success(request, f"Bienvenido, {user.first_name}.")
                 return redirect('home')
     else:
         form = Codigo2FAForm()
@@ -168,7 +168,8 @@ def home(request):
 # View para pedir email para resetear contraseña
 class PasswordReset(auth_views.PasswordResetView):
     template_name = 'usuarios/password_reset_form.html'
-    # email_template_name = 'usuarios/password_reset_email.html'
+    html_email_template_name = 'usuarios/password_reset_email.html'
+    subject_template_name = 'usuarios/password_reset_subject.txt'
     success_url = '/usuarios/password_reset/done/'
 
 # View confirmación email enviado
