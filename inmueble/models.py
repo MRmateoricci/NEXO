@@ -26,6 +26,12 @@ class Inmueble(models.Model):
         null=True,
         blank=True
     )
+    calificacion = models.PositiveSmallIntegerField(
+        choices=[(1, '1 estrella'), (2, '2 estrellas'), (3, '3 estrellas'), 
+                 (4, '4 estrellas'), (5, '5 estrellas')],
+        default=3
+    )
+    
 # Create your models here.
     def __str__(self):
         return f"{self.titulo} - {self.tipo}"

@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1 style="margin-top: 4rem;">Estadísticas de Inmuebles</h1>
+
+<form method="get">
+    <label for="orden">Ordenar por:</label>
+    <select name="orden" id="orden">
+        <option value="">-- Seleccionar --</option>
+        <option value="calificacion_desc" {% if orden and 'calificacion_desc' in orden %}selected{% endif %}>
+            Calificación (Mayor
+            a menor)</option>
+        <option value="metros_asc" {% if orden and 'metros_asc' in orden %}selected{% endif %}>Metros cuadrados (Menor a
+            mayor)
+        </option>
+
+    </select>
+    <button type="submit">Aplicar Filtros</button>
+    <a href="{% url 'estadisticas' %}" class="btn btn-secondary">Limpiar Filtros</a>
+</form>
+
+
+
+<hr>
+
+{% if inmuebles %}
+{% for inmueble in inmuebles %}
+<div class="inmueble-item" style="display: flex; margin-bottom: 2rem;">
+    <div class="inmueble-info" style="flex: 1;">
+        <h3>{{ inmueble.titulo }}</h3>
+        <p><strong>Tipo:</strong> {{ inmueble.tipo }}</p>
+        <p><strong>Ciudad:</strong> {{ inmueble.ciudad }}</p>
+        <p><strong>Metros cuadrados:</strong> {{ inmueble.metros_cuadrados }}</p>
+        <p><strong>Calificación:</strong> {{ inmueble.calificacion }} estrellas</p>
+        <p><strong>Precio diario:</strong> ${{ inmueble.precio_diario }}</p>
+        <p><strong>Estado:</strong> {{ inmueble.estado }}</p>
+    </div>
+
+    {% if inmueble.foto %}
+    <div class="inmueble-image" style="flex: 0 0 40%;">
+        <img src="{{ inmueble.foto.url }}" alt="Foto de {{ inmueble.titulo }}" style="width: 100%;">
+    </div>
+    {% endif %}
+</div>
+{% endfor %}
+{% else %}
+<p><em>No hay inmuebles para mostrar con los filtros aplicados.</em></p>
+{% endif %}
+{% endblock %}

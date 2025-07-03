@@ -11,19 +11,19 @@
     {% if messages %}
     <div>
         {% for message in messages %}
-            {% if message.level == 40 %}
-                <p style="background-color: #fe0000; color: white; padding:8px; border-radius:4px;">
-                {{ message }}
-                </p>
-            {% elif message.level == 25 %}
-                <p style="background-color: green; color: white; padding:8px; border-radius:4px;">
-                {{ message }}
-                </p>
-            {% else %}
-                <p style="background-color: gray; color: white; padding:8px; border-radius:4px;">
-                {{ message }}
-                </p>
-            {% endif %}
+        {% if message.level == 40 %}
+        <p style="background-color: #fe0000; color: white; padding:8px; border-radius:4px;">
+            {{ message }}
+        </p>
+        {% elif message.level == 25 %}
+        <p style="background-color: green; color: white; padding:8px; border-radius:4px;">
+            {{ message }}
+        </p>
+        {% else %}
+        <p style="background-color: gray; color: white; padding:8px; border-radius:4px;">
+            {{ message }}
+        </p>
+        {% endif %}
         {% endfor %}
     </div>
     {% endif %}
@@ -58,17 +58,29 @@
             <p style="font-weight:bold;">Menú</p>
             <a href="{% url 'home' %}" style="display:block; color: #FFA500; margin:0.5rem 0;">Inicio</a>
             {% if user.is_authenticated %}
-                {% if user.rol == 'admin' or user.rol == 'empleado' %}
-                    <a href="{% url 'lista_usuarios' %}" style="display:block; color: #FFA500; margin:0.5rem 0;">Ver
-                        usuarios</a>
-                    <a href="{% url 'registro' %}" style="display:block; color: #FFA500; margin:0.5rem 0;">Registrar usuario</a>
-                    <a href="{% url 'validar_solicitud_reserva' %}"
-                        style="display:block; color: #FFA500; margin:0.5rem 0;">Validar Solicitudes de reserva</a>
-                {% endif %}
-                {% if user.rol == 'inquilino' %}
-                    <a href="{% url 'ver_solicitudes_pendientes' user.id %}"
-                        style="display: block; color: #FFA500; margin:0.5rem 0;">Ver historial de reservas</a>
-                {% endif %}
+            {% if user.rol == 'admin'%}
+            <a href="{% url 'menu_estadisticas' %}" style="display:block; color: #FFA500; margin:0.5rem 0;"> Ver Menu de
+                Estadisticas</a>
+            {% endif %}
+            {% if user.rol == 'admin' or user.rol == 'empleado' or user.rol == 'inquilino' %}
+            <a href="{% url 'crear_inmueble' %}" style="display:block; color: #FFA500; margin:0.5rem 0;">Crear
+                inmueble</a>
+            {% endif %}
+            {% if user.rol == 'admin' or user.rol == 'empleado' %}
+            <a href="{% url 'listar_solicitudes_reserva' %}"
+                style="display:block; color: #FFA500; margin:0.5rem 0;">Solicitudes de reserva</a>
+            {% endif %}
+            {% if user.rol == 'admin' or user.rol == 'empleado' %}
+            <a href="{% url 'lista_usuarios' %}" style="display:block; color: #FFA500; margin:0.5rem 0;">Ver
+                usuarios</a>
+            <a href="{% url 'registro' %}" style="display:block; color: #FFA500; margin:0.5rem 0;">Registrar usuario</a>
+            <a href="{% url 'validar_solicitud_reserva' %}"
+                style="display:block; color: #FFA500; margin:0.5rem 0;">Validar Solicitudes de reserva</a>
+            {% endif %}
+            {% if user.rol == 'inquilino' %}
+            <a href="{% url 'ver_solicitudes_pendientes' user.id %}"
+                style="display: block; color: #FFA500; margin:0.5rem 0;">Ver historial de reservas</a>
+            {% endif %}
             {% endif %}
             <a href="{% url 'listar_inmuebles' %}" style="display:block; color: #FFA500; margin:0.5rem 0;">Inmuebles</a>
         </div>
@@ -83,12 +95,13 @@
     </footer>
 
     <script>
-        setTimeout(function() {
-            document.querySelectorAll('div > p[style*="background-color"]').forEach(function(msg) {
+        setTimeout(function () {
+            document.querySelectorAll('div > p[style*="background-color"]').forEach(function (msg) {
                 msg.style.display = 'none';
             });
         }, 5000);
     </script>
 
 </body>
+
 </html>

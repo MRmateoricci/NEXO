@@ -200,3 +200,19 @@ def cambiar_estado_inmueble(request, id):
         'inmueble': inmueble,
         'fechas_ocupadas_json': fechas_ocupadas,
     })
+
+def estadisticas_inmuebles(request):
+    orden = request.GET.get('orden')
+    inmuebles = Inmueble.objects.filter(activo=True)
+
+    if orden == 'calificacion_desc':
+        inmuebles = inmuebles.order_by('-calificacion')
+    elif orden == 'metros_asc':
+        inmuebles = inmuebles.order_by('metros_cuadrados')
+
+    context = {
+        'inmuebles': inmuebles,
+        'orden': orden,
+    }
+
+    return render(request, 'inmueble/menu_estadisticas.html', context)

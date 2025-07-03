@@ -12,4 +12,5 @@ urlpatterns = [
     path('inmueble/activar/<int:id>/', views.activar_inmueble, name='activar_inmueble'),
     path('inmueble/<int:id>/cambiar-estado/', views.cambiar_estado_inmueble, name='cambiar_estado_inmueble'
     ),
+    path('inmueble/menu_estadisticas/', views.estadisticas_inmuebles, name='estadisticas'),
 ]   
