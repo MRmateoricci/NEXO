@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Avg
 
 
 
@@ -26,12 +27,27 @@ class Inmueble(models.Model):
         null=True,
         blank=True
     )
-    calificacion = models.PositiveSmallIntegerField(
-        choices=[(1, '1 estrella'), (2, '2 estrellas'), (3, '3 estrellas'), 
-                 (4, '4 estrellas'), (5, '5 estrellas')],
-        default=3
-    )
+    def promedio_calificacion(self):
+        promedio = self.calificaciones.aggregate(Avg('puntaje'))['puntaje__avg']
+        return round(promedio, 1) if promedio else 0
     
 # Create your models here.
     def __str__(self):
         return f"{self.titulo} - {self.tipo}"
+    
+from django.conf import settings
+
+class Calificacion(models.Model):
+    inmueble = models.ForeignKey(Inmueble, related_name='calificaciones', on_delete=models.CASCADE)
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    puntaje = models.PositiveSmallIntegerField(choices=[(1, '1 estrella'), (2, '2 estrellas'), (3, '3 estrellas'),
+                                                         (4, '4 estrellas'), (5, '5 estrellas')])
+    comentario = models.TextField(blank=True, null=True)
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('inmueble', 'usuario')  # Para que un usuario no califique dos veces el mismo inmueble
+
+    def __str__(self):
+        return f"{self.usuario} → {self.inmueble}: {self.puntaje} estrellas"
+

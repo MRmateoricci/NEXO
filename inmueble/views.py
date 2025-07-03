@@ -201,12 +201,14 @@ def cambiar_estado_inmueble(request, id):
         'fechas_ocupadas_json': fechas_ocupadas,
     })
 
+from django.db.models import Avg
+
 def estadisticas_inmuebles(request):
     orden = request.GET.get('orden')
-    inmuebles = Inmueble.objects.filter(activo=True)
+    inmuebles = Inmueble.objects.filter(activo=True).annotate(promedio=Avg('calificaciones__puntaje'))
 
     if orden == 'calificacion_desc':
-        inmuebles = inmuebles.order_by('-calificacion')
+        inmuebles = sorted(inmuebles, key=lambda x: x.promedio if x.promedio else 0, reverse=True)
     elif orden == 'metros_asc':
         inmuebles = inmuebles.order_by('metros_cuadrados')
 
