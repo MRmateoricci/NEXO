@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="mt-4">
   <h2>{{ inmueble.titulo }}</h2>
   <p><strong>Descripción:</strong> {{ inmueble.descripcion }}</p>
   <p><strong>Tipo:</strong> {{ inmueble.get_tipo_display }}</p>
@@ -11,6 +11,71 @@
   <p><strong>Dirección:</strong> {{ inmueble.calle }} {{ inmueble.numero }}, {{ inmueble.ciudad }}, {{ inmueble.provincia }}, {{ inmueble.pais }}</p>
   <p><strong>Estado:</strong> {{ inmueble.get_estado_display }}</p>
   <p><strong>Precio por día:</strong> ${{ inmueble.precio_diario }}</p>
-</div>
 
+  <hr style="margin: 0 0;">
+
+  <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+    <!-- Columna izquierda: Reseñas (título + formulario) -->
+    <div style="flex: 1 1 30%; min-width: 300px;">
+      <h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem;">Reseñas</h3>
+
+      {% if puede_reseñar %}
+      <div style="border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); padding: 1rem; background-color: #fff;">
+        <h5 style="font-size: 1.25rem; font-weight: 600; margin-top: 0; margin-bottom: 1rem;">Agregar una reseña</h5>
+        <form method="post">
+          {% csrf_token %}
+          <div style="margin-bottom: 1rem;">
+            {{ form.texto.label_tag }}
+            {{ form.texto }}
+          </div>
+          <div style="margin-bottom: 1rem;">
+            {{ form.estrellas.label_tag }}
+            {{ form.estrellas }}
+          </div>
+          <button type="submit" class="btn btn-primary w-100">
+            Agregar reseña
+          </button>
+        </form>
+      </div>
+      {% else %}
+      <div style="background-color: #e7f1ff; color: #004085; padding: 0.75rem; border-radius: 6px;">
+        Debes tener una reserva confirmada para dejar una reseña.
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Columna derecha: Lista de reseñas -->
+    <div style="flex: 1 1 65%; min-width: 300px;">
+      {% if reseñas %}
+        {% for reseña in reseñas %}
+          <div style="border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); padding: 1rem; background-color: #fff; margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+              <strong style="font-size: 1.1rem;">{{ reseña.inquilino.username }}</strong>
+              <div style="color: #ffc107; font-size: 1.2rem;">
+                {# Estrellas doradas #}
+                {% for i in ""|center:reseña.estrellas %}
+                  ★
+                {% endfor %}
+              </div>
+               {% if request.user.rol == "empleado" %}
+                <form action="{% url 'eliminar_reseña' reseña.id %}" method="post" style="margin: 0;">
+                  {% csrf_token %}
+                  <button type="submit" style="background-color: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">
+                    Eliminar
+                  </button>
+                </form>
+              {% endif %}
+            </div>
+            <p style="color: #555; margin-bottom: 0.5rem;">{{ reseña.texto }}</p>
+            <small style="color: #888;">
+              {{ reseña.fecha_creacion|date:"j \\d\\e F \\d\\e Y \\a \\l\\a\\s H:i" }}
+            </small>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p style="color: #777;">No hay reseñas todavía.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
 {% endblock %}

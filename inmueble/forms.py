@@ -1,6 +1,20 @@
 from django import forms
-from .models import Inmueble
+from .models import Inmueble, Reseña
 
+class ReseñaForm(forms.ModelForm):
+    class Meta:
+        model = Reseña
+        fields = ['texto', 'estrellas']
+        widgets = {
+            'texto': forms.Textarea(attrs={
+                'rows': 3,
+                'class': 'w-full p-2 border rounded',
+                'placeholder': 'Escribe tu reseña...'
+            }),
+            'estrellas': forms.Select(attrs={
+                'class': 'w-full p-2 border rounded'
+            }),
+        }
 class AltaInmueble(forms.ModelForm):
     foto = forms.ImageField(required=True, 
         error_messages={'required': 'El inmueble debe tener una foto.'},

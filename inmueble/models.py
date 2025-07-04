@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models import Avg
+from django.contrib.auth.models import User
 
 
 
@@ -51,3 +52,15 @@ class Calificacion(models.Model):
     def __str__(self):
         return f"{self.usuario} → {self.inmueble}: {self.puntaje} estrellas"
 
+class Reseña(models.Model):
+    inmueble = models.ForeignKey('Inmueble', on_delete=models.CASCADE, related_name='resenas')
+    inquilino = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    texto = models.TextField()
+    estrellas = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)])
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('inmueble', 'inquilino')  # Un inquilino puede dejar solo 1 reseña por inmueble
+
+    def __str__(self):
+        return f"{self.inquilino.username} - {self.estrellas}⭐"

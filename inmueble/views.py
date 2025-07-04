@@ -4,6 +4,25 @@ from django.db.models import Q
 from django.core.paginator import Paginator
 from django.contrib import messages
 from datetime import timedelta
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from .models import Reseña
+@login_required
+def eliminar_reseña(request, reseña_id):
+    if request.method == 'POST':
+        reseña = get_object_or_404(Reseña, id=reseña_id)
+        if request.user.rol == "empleado":
+            inmueble_id = reseña.inmueble.id
+            reseña.delete()
+            messages.success(request, "Reseña eliminada correctamente.")
+            return redirect('ver_detalle_inmueble', inmueble_id=inmueble_id)
+        else:
+            messages.error(request, "No tienes permisos para eliminar esta reseña.")
+            return redirect('ver_detalle_inmueble', inmueble_id=reseña.inmueble.id)
+    else:
+        return redirect('ver_detalle_inmueble', inmueble_id=reseña.inmueble.id)
+
 
 def listar_inmuebles(request):
     # Parámetros GET (con valores por defecto y sanitización)
@@ -87,11 +106,46 @@ def ver_disponibilidad(request, inmueble_id):
         'inmueble': inmueble,
         'eventos_json': json.dumps(eventos, cls=DjangoJSONEncoder)
     })
-
-
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Inmueble, Reseña
+from reservas.models import SolicitudReserva  # Asumiendo que tu modelo de reserva se llama así
+from .forms import ReseñaForm
+from django.contrib.auth.decorators import login_required
+from django.db import IntegrityError
 def ver_detalle_inmueble(request, inmueble_id):
     inmueble = get_object_or_404(Inmueble, pk=inmueble_id)
-    return render(request, 'inmueble/ver_detalle.html', {'inmueble': inmueble})
+    puede_reseñar = SolicitudReserva.objects.filter(
+        inquilino_id=request.user.id,
+        inmueble_id=inmueble.id,
+        estado='confirmada'
+    ).exists()
+
+    if request.method == 'POST' and puede_reseñar:
+        form = ReseñaForm(request.POST)
+        if form.is_valid():
+            # Chequear si ya existe una reseña para este usuario e inmueble
+            if Reseña.objects.filter(inmueble=inmueble, inquilino=request.user).exists():
+                messages.error(request, "Ya has dejado una reseña para este inmueble.")            
+            else:
+                try:
+                    reseña = form.save(commit=False)
+                    reseña.inmueble = inmueble
+                    reseña.inquilino = request.user
+                    reseña.save()
+                    return redirect('ver_detalle_inmueble', inmueble_id=inmueble.id)
+                except IntegrityError:
+                    messages.error(request, "Ya has dejado una reseña para este inmueble.")  
+    else:
+        form = ReseñaForm()
+
+    reseñas = inmueble.resenas.all().order_by('-fecha_creacion')
+
+    return render(request, 'inmueble/ver_detalle.html', {
+        'inmueble': inmueble,
+        'reseñas': reseñas,
+        'form': form,
+        'puede_reseñar': puede_reseñar,
+    })
 
 from .forms import AltaInmueble
 
