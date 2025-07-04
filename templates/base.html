@@ -59,16 +59,8 @@
             <a href="{% url 'home' %}" style="display:block; color: #FFA500; margin:0.5rem 0;">Inicio</a>
             {% if user.is_authenticated %}
             {% if user.rol == 'admin'%}
-            <a href="{% url 'menu_estadisticas' %}" style="display:block; color: #FFA500; margin:0.5rem 0;"> Ver Menu de
+            <a href="{% url 'estadisticas' %}" style="display:block; color: #FFA500; margin:0.5rem 0;"> Ver Menu de
                 Estadisticas</a>
-            {% endif %}
-            {% if user.rol == 'admin' or user.rol == 'empleado' or user.rol == 'inquilino' %}
-            <a href="{% url 'crear_inmueble' %}" style="display:block; color: #FFA500; margin:0.5rem 0;">Crear
-                inmueble</a>
-            {% endif %}
-            {% if user.rol == 'admin' or user.rol == 'empleado' %}
-            <a href="{% url 'listar_solicitudes_reserva' %}"
-                style="display:block; color: #FFA500; margin:0.5rem 0;">Solicitudes de reserva</a>
             {% endif %}
             {% if user.rol == 'admin' or user.rol == 'empleado' %}
             <a href="{% url 'lista_usuarios' %}" style="display:block; color: #FFA500; margin:0.5rem 0;">Ver
