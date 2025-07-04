@@ -9,7 +9,7 @@ class Inmueble(models.Model):
     tipo = models.CharField(max_length=50, choices=[('Casa', 'Casa'), ('Local', 'Local'), ('Cochera', 'Cochera'), ('Departamento', 'Departamento')])
     metros_cuadrados = models.DecimalField(max_digits=10, decimal_places=2)
     cantidad_huespedes = models.IntegerField(default=2)
-    baños = models.IntegerField(default=2)
+    banos = models.IntegerField(default=2)
     calle = models.CharField(max_length=100)
     numero = models.CharField(max_length=10)
     ciudad = models.CharField(max_length=50)

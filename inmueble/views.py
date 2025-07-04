@@ -11,6 +11,7 @@ def listar_inmuebles(request):
     tipo = request.GET.get('tipo', '').strip()
     huespedes = request.GET.get('huespedes', '').strip()
     metros = request.GET.get('metros', '').strip()
+    banos = request.GET.get('banos','').strip()
 
     # Filtrado
     if tipo:
@@ -23,6 +24,11 @@ def listar_inmuebles(request):
     if metros:
         try:
             filters &= Q(metros_cuadrados__gte=float(metros))
+        except ValueError:
+            pass
+    if banos:
+        try:
+            filters &= Q(banos__gte=int(banos))           
         except ValueError:
             pass
 
@@ -42,6 +48,7 @@ def listar_inmuebles(request):
         'huespedes': huespedes,
         'metros': metros,
         'tipo_choices': tipo_choices,
+        'banos': banos,
     })
 
 

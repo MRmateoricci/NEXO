@@ -92,6 +92,10 @@
     <label for="metros">Metros cuadrados mínimos:</label>
     <input type="number" name="metros" id="metros" min="1" step="0.01" value="{{ metros|default:'' }}">
 
+    <!-- Filtro de Baños -->
+    <label for="banos">Baños minimos:</label>
+    <input type="number" name="banos" id="banos" min="0" step="1" value="{{ banos|default:'' }}">
+
     <button type="submit">Filtrar</button>
     <a href="{% url 'listar_inmuebles' %}" class="btn btn-secondary">Limpiar filtros</a>
 </form>
@@ -100,7 +104,7 @@
 
 {# Si no hay ningún resultado tras el filtrado… #}
 {% if page_obj.paginator.count == 0 %}
-  {% if tipo or huespedes or metros %}
+  {% if tipo or huespedes or metros or banos %}
     <p><em>No hay inmuebles que cumplan el filtrado.</em></p>
   {% else %}
     <p><strong>Aún no hay inmuebles cargados.</strong></p>
