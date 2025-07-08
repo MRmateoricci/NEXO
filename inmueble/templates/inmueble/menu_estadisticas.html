@@ -99,6 +99,12 @@ Total reservas: {{ total_reservas_tipo }}
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+<script id="ingresosProvinciaData" type="application/json">{{ ingresos_provincia|safe }}</script>
+<script id="ingresosTipoData" type="application/json">{{ ingresos_tipo|safe }}</script>
+<script id="reservasProvinciaData" type="application/json">{{ reservas_provincia|safe }}</script>
+<script id="reservasTipoData" type="application/json">{{ reservas_tipo|safe }}</script>
+
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // Cargar los datos seguros desde JSON
@@ -159,8 +165,8 @@ Total reservas: {{ total_reservas_tipo }}
         }
 
         crearGrafico('ingresosProvinciaChart', 'pie', ingresosProvincia, 'Ingresos', 'blue', 'inmueble__provincia', 'total');
-        crearGrafico('ingresosTipoChart', 'pie', ingresosTipo, 'Ingresos', 'green', 'inmueble__tipo_inmueble__nombre', 'total');
-        crearGrafico('reservasProvinciaChart', 'pie', reservasProvincia, 'Reservas', 'red', 'inmueble__provincia', 'count');
+        crearGrafico('ingresosTipoChart', 'pie', ingresosTipo, 'Ingresos', 'green', 'tipo', 'total');
+        crearGrafico('reservasTipoChart', 'pie', reservasTipo, 'Reservas', 'blue', 'tipo', 'count');
         crearGrafico('reservasTipoChart', 'pie', reservasTipo, 'Reservas', 'blue', 'inmueble__tipo_inmueble__nombre', 'count');
     });
 </script>
