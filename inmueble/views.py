@@ -28,6 +28,7 @@ def listar_inmuebles(request):
     # Parámetros GET (con valores por defecto y sanitización)
     filters = Q(activo=True)
     tipo = request.GET.get('tipo', '').strip()
+    estrellas = request.GET.get('estrellas', '').strip()
     huespedes = request.GET.get('huespedes', '').strip()
     metros = request.GET.get('metros', '').strip()
     banos = request.GET.get('banos','').strip()
@@ -35,6 +36,11 @@ def listar_inmuebles(request):
     # Filtrado
     if tipo:
         filters &= Q(tipo__iexact=tipo)
+    if estrellas:
+        try:
+            filters &= Q(estrellas=int(estrellas))
+        except ValueError:
+            pass
     if huespedes:
         try:
             filters &= Q(cantidad_huespedes__gte=int(huespedes))
@@ -60,13 +66,17 @@ def listar_inmuebles(request):
 
     # Choices para el template
     tipo_choices = Inmueble._meta.get_field('tipo').choices or []
+    estrellas_choices = Inmueble._meta.get_field('estrellas').choices or []
+
 
     return render(request, 'inmueble/listar.html', {
         'page_obj': page_obj,
         'tipo': tipo,
+        'estrellas': estrellas,
         'huespedes': huespedes,
         'metros': metros,
         'tipo_choices': tipo_choices,
+        'estrellas_choices': estrellas_choices,
         'banos': banos,
     })
 

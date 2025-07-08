@@ -84,6 +84,15 @@
         {% endfor %}
     </select>
 
+    <!-- Filtro de Categoría (Estrellas) -->
+    <label for="estrellas">Categoría (estrellas):</label>
+    <select name="estrellas" id="estrellas">
+        <option value="">Todas</option>
+        {% for value, label in estrellas_choices %}
+          <option value="{{ value }}" {% if estrellas == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+
     <!-- Filtro de Huéspedes -->
     <label for="huespedes">Cantidad mínima de huéspedes:</label>
     <input type="number" name="huespedes" id="huespedes" min="1" value="{{ huespedes|default:'' }}">

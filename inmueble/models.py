@@ -2,7 +2,13 @@ from django.db import models
 from django.db.models import Avg
 from django.contrib.auth.models import User
 
-
+ESTRELLAS_CHOICES = [
+    (1, '★☆☆☆☆'),
+    (2, '★★☆☆☆'),
+    (3, '★★★☆☆'),
+    (4, '★★★★☆'),
+    (5, '★★★★★'),
+]
 
 class Inmueble(models.Model):
     titulo = models.CharField(max_length=200, unique=True)
@@ -28,6 +34,7 @@ class Inmueble(models.Model):
         null=True,
         blank=True
     )
+    estrellas = models.IntegerField(choices=ESTRELLAS_CHOICES, default=3)
     def promedio_calificacion(self):
         promedio = self.calificaciones.aggregate(Avg('puntaje'))['puntaje__avg']
         return round(promedio, 1) if promedio else 0
