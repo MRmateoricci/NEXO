@@ -1,49 +1,200 @@
 {% extends 'base.html' %}
-
+{% load custom_filters %}
 {% block content %}
-<h1 style="margin-top: 4rem;">Estadísticas de Inmuebles</h1>
+<div class="container-fluid">
+    <h1 class="mb-4">Estadísticas de Inmuebles</h1>
 
-<form method="get">
-    <label for="orden">Ordenar por:</label>
-    <select name="orden" id="orden">
-        <option value="">-- Seleccionar --</option>
-        <option value="calificacion_desc" {% if orden and 'calificacion_desc' in orden %}selected{% endif %}>
-            Calificación (Mayor
-            a menor)</option>
-        <option value="metros_asc" {% if orden and 'metros_asc' in orden %}selected{% endif %}>Metros cuadrados (Menor a
-            mayor)
-        </option>
-
-    </select>
-    <button type="submit">Aplicar Filtros</button>
-    <a href="{% url 'estadisticas' %}" class="btn btn-secondary">Limpiar Filtros</a>
-</form>
-
-
-
-<hr>
-
-{% if inmuebles %}
-{% for inmueble in inmuebles %}
-<div class="inmueble-item" style="display: flex; margin-bottom: 2rem;">
-    <div class="inmueble-info" style="flex: 1;">
-        <h3>{{ inmueble.titulo }}</h3>
-        <p><strong>Tipo:</strong> {{ inmueble.tipo }}</p>
-        <p><strong>Ciudad:</strong> {{ inmueble.ciudad }}</p>
-        <p><strong>Metros cuadrados:</strong> {{ inmueble.metros_cuadrados }}</p>
-        <p><strong>Promedio de Calificación:</strong> {{ inmueble.promedio_calificacion }} estrellas</p>
-        <p><strong>Precio diario:</strong> ${{ inmueble.precio_diario }}</p>
-        <p><strong>Estado:</strong> {{ inmueble.estado }}</p>
+    <!-- Filtro por fechas -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Seleccionar Rango de Fechas</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-center">
+                <div class="col-md-5">
+                    <label for="fecha_inicio" class="form-label">Fecha Inicio:</label>
+                    <input type="date" id="fecha_inicio" name="fecha_inicio" value="{{ fecha_inicio }}"
+                        class="form-control">
+                </div>
+                <div class="col-md-5">
+                    <label for="fecha_fin" class="form-label">Fecha Fin:</label>
+                    <input type="date" id="fecha_fin" name="fecha_fin" value="{{ fecha_fin }}" class="form-control">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+                </div>
+            </form>
+        </div>
     </div>
 
-    {% if inmueble.foto %}
-    <div class="inmueble-image" style="flex: 0 0 40%;">
-        <img src="{{ inmueble.foto.url }}" alt="Foto de {{ inmueble.titulo }}" style="width: 100%;">
+    <!-- Sección de Gráficos -->
+    <div class="row">
+        {% comment %} Cada gráfico con su tarjeta correspondiente {% endcomment %}
+        <!-- Ingresos por Provincia -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Ingresos por Provincia</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="ingresosProvinciaChart" height="300"></canvas>
+                </div>
+                <div class="card-footer small text-muted">
+                    Total ingresos: {{ total_ingresos_provincia|floatformat:2 }} $
+                </div>
+            </div>
+        </div>
+
+        <!-- Ingresos por Tipo -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Ingresos por Tipo de Inmueble</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="ingresosTipoChart" height="300"></canvas>
+                </div>
+                <div class="card-footer small text-muted">
+                    Total ingresos: {{ total_ingresos_tipo|floatformat:2 }} $
+                </div>
+            </div>
+        </div>
+
+        <!-- Reservas por Provincia -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Reservas por Provincia</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="reservasProvinciaChart" height="300"></canvas>
+                </div>
+                <div class="card-footer small text-muted">
+                    Total reservas: {{ total_reservas_provincia }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Reservas por Tipo -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Reservas por Tipo de Inmueble</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="reservasTipoChart" height="300"></canvas>
+                </div>
+                <div class="card-footer small text-muted">
+                    Total reservas: {{ total_reservas_tipo }}
+                </div>
+            </div>
+        </div>
     </div>
-    {% endif %}
 </div>
-{% endfor %}
-{% else %}
-<p><em>No hay inmuebles para mostrar con los filtros aplicados.</em></p>
-{% endif %}
+
+Total ingresos: {{ total_ingresos_provincia|floatformat:2 }} $
+Total ingresos: {{ total_ingresos_tipo|floatformat:2 }} $
+Total reservas: {{ total_reservas_provincia }}
+Total reservas: {{ total_reservas_tipo }}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Cargar los datos seguros desde JSON
+        const ingresosProvincia = JSON.parse(document.getElementById('ingresosProvinciaData').textContent);
+        const ingresosTipo = JSON.parse(document.getElementById('ingresosTipoData').textContent);
+        const reservasProvincia = JSON.parse(document.getElementById('reservasProvinciaData').textContent);
+        const reservasTipo = JSON.parse(document.getElementById('reservasTipoData').textContent);
+
+        // Función de colores (igual que antes)
+        function generarColores(cantidad, paleta) {
+            const colores = {
+                blue: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'],
+                green: ['#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#4e73df'],
+                red: ['#e74a3b', '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e']
+            };
+            return Array.from({ length: cantidad }, (_, i) => colores[paleta][i % colores[paleta].length]);
+        }
+
+        const opcionesComunes = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'right' },
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            let label = context.label ? context.label + ': ' : '';
+                            label += context.dataset.label === 'Ingresos'
+                                ? new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(context.parsed)
+                                : new Intl.NumberFormat('es-ES').format(context.parsed);
+                            return label;
+                        }
+                    }
+                }
+            }
+        };
+
+        // Función reutilizable
+        function crearGrafico(canvasId, tipo, data, label, paleta, campoLabel, campoValor) {
+            if (!data || !Array.isArray(data) || data.length === 0) return;
+
+            const etiquetas = data.map(item => item[campoLabel]);
+            const valores = data.map(item => item[campoValor]);
+
+            new Chart(document.getElementById(canvasId), {
+                type: tipo,
+                data: {
+                    labels: etiquetas,
+                    datasets: [{
+                        label: label,
+                        data: valores,
+                        backgroundColor: generarColores(etiquetas.length, paleta),
+                        borderWidth: 1
+                    }]
+                },
+                options: opcionesComunes
+            });
+        }
+
+        crearGrafico('ingresosProvinciaChart', 'pie', ingresosProvincia, 'Ingresos', 'blue', 'inmueble__provincia', 'total');
+        crearGrafico('ingresosTipoChart', 'pie', ingresosTipo, 'Ingresos', 'green', 'inmueble__tipo_inmueble__nombre', 'total');
+        crearGrafico('reservasProvinciaChart', 'pie', reservasProvincia, 'Reservas', 'red', 'inmueble__provincia', 'count');
+        crearGrafico('reservasTipoChart', 'pie', reservasTipo, 'Reservas', 'blue', 'inmueble__tipo_inmueble__nombre', 'count');
+    });
+</script>
+
+
+<style>
+    .card {
+        border: none;
+        border-radius: 0.35rem;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        transition: all 0.3s;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 2rem 0 rgba(58, 59, 69, 0.2);
+    }
+
+    .card-header {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 1rem 1.35rem;
+        background-color: #f8f9fc;
+    }
+
+    .bg-primary {
+        background-color: #4e73df !important;
+    }
+
+    .bg-secondary {
+        background-color: #858796 !important;
+    }
+
+    .bg-info {
+        background-color: #36b9cc !important;
+    }
+</style>
 {% endblock %}

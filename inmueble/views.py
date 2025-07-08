@@ -262,20 +262,82 @@ def cambiar_estado_inmueble(request, id):
         'fechas_ocupadas_json': fechas_ocupadas,
     })
 
-from django.db.models import Avg
+from django.shortcuts import render
+from django.db.models import Sum, Count, ExpressionWrapper, F, FloatField
+from django.utils import timezone
+from django.contrib.auth.decorators import user_passes_test
+from reservas.models import Reserva
+from .models import Inmueble 
 
 def estadisticas_inmuebles(request):
-    orden = request.GET.get('orden')
-    inmuebles = Inmueble.objects.filter(activo=True).annotate(promedio=Avg('calificaciones__puntaje'))
+    # Fechas por defecto (últimos 30 días)
+    fecha_inicio = request.GET.get('fecha_inicio', (timezone.now() - timezone.timedelta(days=30)).strftime('%Y-%m-%d'))
+    fecha_fin = request.GET.get('fecha_fin', timezone.now().strftime('%Y-%m-%d'))
 
-    if orden == 'calificacion_desc':
-        inmuebles = sorted(inmuebles, key=lambda x: x.promedio if x.promedio else 0, reverse=True)
-    elif orden == 'metros_asc':
-        inmuebles = inmuebles.order_by('metros_cuadrados')
+    # Validar fechas
+    try:
+        fecha_inicio_obj = timezone.datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
+        fecha_fin_obj = timezone.datetime.strptime(fecha_fin, '%Y-%m-%d').date()
+
+        if fecha_fin_obj < fecha_inicio_obj:
+            fecha_inicio_obj, fecha_fin_obj = fecha_fin_obj, fecha_inicio_obj
+            fecha_inicio, fecha_fin = fecha_fin, fecha_inicio
+    except:
+        fecha_inicio_obj = (timezone.now() - timezone.timedelta(days=30)).date()
+        fecha_fin_obj = timezone.now().date()
+        fecha_inicio = fecha_inicio_obj.strftime('%Y-%m-%d')
+        fecha_fin = fecha_fin_obj.strftime('%Y-%m-%d')
+
+    # Filtrar reservas confirmadas dentro del rango
+    reservas = Reserva.objects.filter(
+        fecha_inicio__gte=fecha_inicio_obj,
+        fecha_fin__lte=fecha_fin_obj,
+        estado='confirmada'
+    ).annotate(
+        dias=ExpressionWrapper(
+            F('fecha_fin') - F('fecha_inicio'),
+            output_field=FloatField()
+        ),
+        precio_final=ExpressionWrapper(
+            F('inmueble__precio_diario') * (
+                F('fecha_fin') - F('fecha_inicio')
+            ),
+            output_field=FloatField()
+        )
+    )
+
+    # Agrupar ingresos y reservas por provincia y tipo
+    ingresos_provincia = reservas.values('inmueble__provincia').annotate(
+        total=Sum('precio_final')
+    )
+    ingresos_tipo = reservas.values('inmueble__tipo').annotate(
+        total=Sum('precio_final')
+    )
+    reservas_provincia = reservas.values('inmueble__provincia').annotate(
+        count=Count('id')
+    )
+    reservas_tipo = reservas.values('inmueble__tipo').annotate(
+        count=Count('id')
+    )
+
+    # Calcula los totales
+    total_ingresos_provincia = sum(item['total'] or 0 for item in ingresos_provincia)
+    total_ingresos_tipo = sum(item['total'] or 0 for item in ingresos_tipo)
+    total_reservas_provincia = sum(item['count'] or 0 for item in reservas_provincia)
+    total_reservas_tipo = sum(item['count'] or 0 for item in reservas_tipo)
 
     context = {
-        'inmuebles': inmuebles,
-        'orden': orden,
+        'fecha_inicio': fecha_inicio,
+        'fecha_fin': fecha_fin,
+        'ingresos_provincia': list(ingresos_provincia),
+        'ingresos_tipo': list(ingresos_tipo),
+        'reservas_provincia': list(reservas_provincia),
+        'reservas_tipo': list(reservas_tipo),
+        # Agrega estos nuevos campos:
+        'total_ingresos_provincia': total_ingresos_provincia,
+        'total_ingresos_tipo': total_ingresos_tipo,
+        'total_reservas_provincia': total_reservas_provincia,
+        'total_reservas_tipo': total_reservas_tipo,
     }
 
     return render(request, 'inmueble/menu_estadisticas.html', context)
