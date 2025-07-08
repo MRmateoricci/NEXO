@@ -30,14 +30,31 @@
     }
 
     li {
+        position: relative;
         margin-bottom: 1em;
         background: #fff;
         border-radius: 8px;
         padding: 1em;
+        padding-bottom: 3em;     
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         font-size: 1em;
     }
+
+    .btn-pagar {
+    background-color: #28a745;    
+    color: white;
+    padding: 0.5em 1em;
+    border: none;
+    border-radius: 0.25em;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+    float: right;                 
+    margin-bottom: 1em; 
+    margin-top: 0.15cm;          
+    }
 </style>
+
 
 <div class="solicitudes-columns">
     <div class="solicitudes-col">
@@ -68,7 +85,8 @@
                 <strong>Inmueble:</strong> {{ solicitud.inmueble }}<br>
                 <strong>Fecha inicio:</strong> {{ solicitud.fecha_inicio }}<br>
                 <strong>Fecha fin:</strong> {{ solicitud.fecha_fin }}<br>
-                <strong>Estado:</strong> {{ solicitud.estado|capfirst }}
+                <strong>Estado:</strong> {{ solicitud.estado|capfirst }}<br>
+                <a href="{% url 'pagar_reserva' solicitud.id %}" class="btn-pagar" >Pagar ahora</a>
             </li>
             {% endif %}
             {% empty %}
