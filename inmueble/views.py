@@ -119,6 +119,7 @@ from reservas.models import SolicitudReserva  # Asumiendo que tu modelo de reser
 from .forms import ReseñaForm
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
+
 def ver_detalle_inmueble(request, inmueble_id):
     inmueble = get_object_or_404(Inmueble, pk=inmueble_id)
     puede_reseñar = SolicitudReserva.objects.filter(

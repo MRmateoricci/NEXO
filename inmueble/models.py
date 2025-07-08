@@ -23,6 +23,10 @@ class Inmueble(models.Model):
     fecha_fin_inactividad = models.DateField(null=True,blank=True,)
     minimo_dias_reserva = models.IntegerField(default=1)
     maximo_dias_reserva = models.IntegerField(default=30)
+    devolucion_7dias_o_mas = models.IntegerField(default=0,null=False,blank=False)
+    devolucion_7_a_2dias = models.IntegerField(default=0,null=False,blank=False)
+    devolucion_2_a_0dias = models.IntegerField(default=0,null=False,blank=False)
+    
     foto = models.ImageField(
         upload_to='inmuebles/',
         null=True,
