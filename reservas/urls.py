@@ -16,7 +16,7 @@ urlpatterns = [
     
     # URL para la vista de eliminar reserva
     path('cancelar/', views.eliminarReservaView, name='cancelar_reserva'),
-
+    path('confirmarcancelacion/<int:reserva_id>', views.confirmar_cancelacion_reserva_view, name='confirmar_cancelacion'),
     path('buscar-usuarios/', views.buscar_usuarios_view, name='buscar_usuarios'),
     path('gestion-inquilinos/<int:reserva_id>/', views.gestion_inquilinos_view, name='gestion_inquilinos'),
     path('validar/', views.validarSolicitudReservaView, name='validar_solicitud_reserva'),

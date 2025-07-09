@@ -49,7 +49,20 @@
     text-decoration: none;
     font-weight: bold;
     transition: background-color 0.2s ease;
-    float: right;                 
+    display: inline-block;                 
+    margin-bottom: 1em; 
+    margin-top: 0.15cm;          
+    }
+    .btn-eliminar {
+    background-color: #b40a0a;    
+    color: white;
+    padding: 0.5em 1em;
+    border: none;
+    border-radius: 0.25em;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+    display: inline-block;                 
     margin-bottom: 1em; 
     margin-top: 0.15cm;          
     }
@@ -67,9 +80,11 @@
                 <strong>Fecha inicio:</strong> {{ solicitud.fecha_inicio }}<br>
                 <strong>Fecha fin:</strong> {{ solicitud.fecha_fin }}<br>
                 <strong>Estado:</strong> {{ solicitud.estado|capfirst }}
-                <!--<button class="btn btn-danger" style="margin-left: 1em;"
-                    onclick="eliminarSolicitud('{{ solicitud.id }}')">Cancelar solicitud de reserva</button>-->
+                <button type="button" class="btn-eliminar" onclick="eliminarSolicitud('{{ solicitud.id }}')">
+                    cancelar solicitud de reserva
+                </button>            
             </li>
+
             {% endif %}
             {% empty %}
             <li>No tienes solicitudes de reserva pendientes.</li>
@@ -87,6 +102,9 @@
                 <strong>Fecha fin:</strong> {{ solicitud.fecha_fin }}<br>
                 <strong>Estado:</strong> {{ solicitud.estado|capfirst }}<br>
                 <a href="{% url 'pagar_reserva' solicitud.id %}" class="btn-pagar" >Pagar ahora</a>
+                <button type="button" class="btn-eliminar" onclick="eliminarSolicitud('{{ solicitud.id }}')">
+                    cancelar solicitud de reserva
+                </button>  
             </li>
             {% endif %}
             {% empty %}
@@ -104,8 +122,9 @@
                 <strong>Fecha inicio:</strong> {{ solicitud.fecha_inicio }}<br>
                 <strong>Fecha fin:</strong> {{ solicitud.fecha_fin }}<br>
                 <strong>Estado:</strong> {{ solicitud.estado|capfirst }}
-                <!--<button class="btn btn-danger" style="margin-left: 1em;"
-                    onclick="eliminarSolicitud('{{ solicitud.id }}')">Cancelar reserva</button>-->
+                {% if solicitud.fecha_inicio > hoy %}
+                    <a href="{% url 'confirmar_cancelacion' solicitud.id %}" class="btn-eliminar">cancelar solicitud de reserva</a>
+                {% endif %}
             </li>
             {% endif %}
             {% empty %}

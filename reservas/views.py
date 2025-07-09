@@ -9,8 +9,7 @@ from . import forms
 from usuarios.models import Usuario
 from inmueble.models import Inmueble
 from django.contrib.auth.decorators import user_passes_test, login_required
-from django.utils import timezone
-
+from datetime import date
 from django.core.mail import send_mail
 from django.urls import reverse
 from django.conf import settings
@@ -194,7 +193,7 @@ def verSolicitudesPendientesView(request, inquilino_id):
     solicitudesInquilino = SolicitudReserva.objects.filter(inquilino=inquilino)
     reservasInquilino = Reserva.objects.filter(inquilino=inquilino)
     solicitudes_y_reservas = list(solicitudesInquilino) + list(reservasInquilino)
-    return render(request, 'ver_solicitudes_pendientes.html', {'solicitudes': solicitudes_y_reservas})
+    return render(request, 'ver_solicitudes_pendientes.html', {'solicitudes': solicitudesInquilino, 'hoy': date.today()})
 
 #@user_passes_test(es_empleado)
 def solicitudReservasEmpleadoView(request):
@@ -307,3 +306,33 @@ def pagar_reserva_view(request, solicitud_id):
         return render(request, 'pago_exitoso.html', {'solicitud': solicitud})
 
     return render(request, 'pagar_reserva.html', {'solicitud': solicitud})
+
+def confirmar_cancelacion_reserva_view(request, reserva_id):
+    reserva = get_object_or_404(SolicitudReserva, id=reserva_id)
+    inmueble = reserva.inmueble
+    from datetime import date
+    dias_anticipacion = (reserva.fecha_inicio - date.today()).days
+
+    if dias_anticipacion >= 7:
+        porcentaje = inmueble.devolucion_7dias_o_mas
+    elif 2 <= dias_anticipacion < 7:
+        porcentaje = inmueble.devolucion_7_a_2dias
+    else:
+        porcentaje = inmueble.devolucion_2_a_0dias
+
+    if request.method == "POST":
+        reserva.estado = 'cancelada'
+        reserva.save()
+        # Redirige a la página de solicitudes del inquilino
+        return redirect('ver_solicitudes_pendientes', inquilino_id=reserva.inquilino.id)
+
+
+    from decimal import Decimal
+
+    monto = reserva.monto_total * (Decimal(porcentaje) / Decimal('100'))
+    return render(request, 'confirmar_cancelacion.html', {
+        'reserva': reserva,
+        'porcentaje_reintegro': int(monto),
+        'dias_anticipacion': dias_anticipacion,
+        'inquilino_id': reserva.inquilino.id,
+    })
