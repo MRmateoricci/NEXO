@@ -130,7 +130,8 @@ def eliminarReservaView(request):
         solicitud_id = data.get("solicitud_id")
         try:
             solicitud = SolicitudReserva.objects.get(id=solicitud_id)
-            solicitud.delete()
+            solicitud.estado = 'cancelada'
+            solicitud.save()
             return JsonResponse({"success": True})
         except SolicitudReserva.DoesNotExist:
             return JsonResponse({"success": False, "error": "No existe"}, status=404)
@@ -139,9 +140,15 @@ def eliminarReservaView(request):
 
 #@user_passes_test(es_empleado)
 def validarSolicitudReservaView(request):
+    caducar_solicitudes_pendientes()
+    actualizar_estado_reservas()
     solicitudesPendientes = SolicitudReserva.objects.filter(estado='pendiente').order_by('fecha_inicio')
     SolicitudesPendientesDePago = SolicitudReserva.objects.filter(estado='pendiente de pago').order_by('fecha_inicio')
-    solicitudes = list(solicitudesPendientes) + list(SolicitudesPendientesDePago)   
+    solicitudesConfirmadas = SolicitudReserva.objects.filter(estado='confirmada')
+    solicitudesIniciadas = SolicitudReserva.objects.filter(estado='iniciada')
+    solicitudesFinalizadas = SolicitudReserva.objects.filter(estado='finalizada')
+    solicitudes = list(solicitudesPendientes) + list(SolicitudesPendientesDePago) + list(solicitudesConfirmadas) + list(solicitudesIniciadas) + list(solicitudesFinalizadas)
+    
     if request.method == 'POST':
         solicitud_id = request.POST.get('solicitud_id')
         accion = request.POST.get('accion')
@@ -189,6 +196,8 @@ def validarSolicitudReservaView(request):
 
 def verSolicitudesPendientesView(request, inquilino_id):
     # Mostrar todas las solicitudes de reserva y reservas del inquilino, sin importar el estado
+    caducar_solicitudes_pendientes()
+    actualizar_estado_reservas()
     inquilino = Usuario.objects.get(id=inquilino_id)
     solicitudesInquilino = SolicitudReserva.objects.filter(inquilino=inquilino)
     reservasInquilino = Reserva.objects.filter(inquilino=inquilino)
@@ -198,6 +207,8 @@ def verSolicitudesPendientesView(request, inquilino_id):
 #@user_passes_test(es_empleado)
 def solicitudReservasEmpleadoView(request):
     # Mostrar todas las reservas
+    caducar_solicitudes_pendientes()
+    actualizar_estado_reservas()
     reservas = SolicitudReserva.objects.all()
     return render(request, 'solicitud_reserva_empleado.html', {'reservas': reservas})
 
@@ -336,3 +347,33 @@ def confirmar_cancelacion_reserva_view(request, reserva_id):
         'dias_anticipacion': dias_anticipacion,
         'inquilino_id': reserva.inquilino.id,
     })
+
+from datetime import timedelta
+from django.utils import timezone
+
+def caducar_solicitudes_pendientes():
+    ahora = timezone.now()
+    limite = ahora - timedelta(days=1)
+    
+    solicitudes_caducadas = SolicitudReserva.objects.filter(
+        estado='pendiente de pago',
+        fecha_solicitud=limite
+    )
+    
+    for solicitud in solicitudes_caducadas:
+        solicitud.estado = 'cancelada'
+        solicitud.save()
+
+def actualizar_estado_reservas():
+    hoy = timezone.now().date()
+
+    reservas_confirmadas = SolicitudReserva.objects.filter(estado='confirmada')
+    for reserva in reservas_confirmadas:
+        if hoy >= reserva.fecha_inicio and hoy <= reserva.fecha_fin:
+            if reserva.estado != 'iniciada':
+                reserva.estado = 'iniciada'
+                reserva.save()
+        elif hoy > reserva.fecha_fin:
+            if reserva.estado != 'finalizada':
+                reserva.estado = 'finalizada'
+                reserva.save()

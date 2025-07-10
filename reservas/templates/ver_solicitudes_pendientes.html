@@ -51,7 +51,7 @@
     transition: background-color 0.2s ease;
     display: inline-block;                 
     margin-bottom: 1em; 
-    margin-top: 0.15cm;          
+    margin-top: 0.40cm;          
     }
     .btn-eliminar {
     background-color: #b40a0a;    
@@ -63,11 +63,10 @@
     font-weight: bold;
     transition: background-color 0.2s ease;
     display: inline-block;                 
-    margin-bottom: 1em; 
-    margin-top: 0.15cm;          
+    margin-bottom: 0.50em; 
+    margin-top: 0.1cm;          
     }
 </style>
-
 
 <div class="solicitudes-columns">
     <div class="solicitudes-col">
@@ -81,10 +80,9 @@
                 <strong>Fecha fin:</strong> {{ solicitud.fecha_fin }}<br>
                 <strong>Estado:</strong> {{ solicitud.estado|capfirst }}
                 <button type="button" class="btn-eliminar" onclick="eliminarSolicitud('{{ solicitud.id }}')">
-                    cancelar solicitud de reserva
+                    Cancelar solicitud de reserva
                 </button>            
             </li>
-
             {% endif %}
             {% empty %}
             <li>No tienes solicitudes de reserva pendientes.</li>
@@ -103,7 +101,7 @@
                 <strong>Estado:</strong> {{ solicitud.estado|capfirst }}<br>
                 <a href="{% url 'pagar_reserva' solicitud.id %}" class="btn-pagar" >Pagar ahora</a>
                 <button type="button" class="btn-eliminar" onclick="eliminarSolicitud('{{ solicitud.id }}')">
-                    cancelar solicitud de reserva
+                    Cancelar solicitud de reserva
                 </button>  
             </li>
             {% endif %}
@@ -123,7 +121,7 @@
                 <strong>Fecha fin:</strong> {{ solicitud.fecha_fin }}<br>
                 <strong>Estado:</strong> {{ solicitud.estado|capfirst }}
                 {% if solicitud.fecha_inicio > hoy %}
-                    <a href="{% url 'confirmar_cancelacion' solicitud.id %}" class="btn-eliminar">cancelar solicitud de reserva</a>
+                    <a href="{% url 'confirmar_cancelacion' solicitud.id %}" class="btn-eliminar">Cancelar solicitud de reserva</a>
                 {% endif %}
             </li>
             {% endif %}
@@ -132,6 +130,43 @@
             {% endfor %}
         </ul>
     </div>
+
+    <div class="solicitudes-col">
+        <h2>Iniciada</h2>
+        <ul>
+            {% for solicitud in solicitudes %}
+            {% if solicitud.estado == "iniciada" %}
+            <li>
+                <strong>Inmueble:</strong> {{ solicitud.inmueble }}<br>
+                <strong>Fecha inicio:</strong> {{ solicitud.fecha_inicio }}<br>
+                <strong>Fecha fin:</strong> {{ solicitud.fecha_fin }}<br>
+                <strong>Estado:</strong> {{ solicitud.estado|capfirst }}
+            </li>
+            {% endif %}
+            {% empty %}
+            <li>No tienes solicitudes de reserva iniciadas.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="solicitudes-col">
+        <h2>Finalizada</h2>
+        <ul>
+            {% for solicitud in solicitudes %}
+            {% if solicitud.estado == "finalizada" %}
+            <li>
+                <strong>Inmueble:</strong> {{ solicitud.inmueble }}<br>
+                <strong>Fecha inicio:</strong> {{ solicitud.fecha_inicio }}<br>
+                <strong>Fecha fin:</strong> {{ solicitud.fecha_fin }}<br>
+                <strong>Estado:</strong> {{ solicitud.estado|capfirst }}
+            </li>
+            {% endif %}
+            {% empty %}
+            <li>No tienes solicitudes de reserva finalizadas.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
     <div class="solicitudes-col">
         <h2>Cancelada</h2>
         <ul>
@@ -150,6 +185,7 @@
         </ul>
     </div>
 </div>
+
 
 <script>
     function eliminarSolicitud(id) {
