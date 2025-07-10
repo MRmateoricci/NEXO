@@ -129,6 +129,7 @@ from reservas.models import SolicitudReserva  # Asumiendo que tu modelo de reser
 from .forms import ReseñaForm
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
+
 def ver_detalle_inmueble(request, inmueble_id):
     inmueble = get_object_or_404(Inmueble, pk=inmueble_id)
     puede_reseñar = SolicitudReserva.objects.filter(
@@ -272,20 +273,101 @@ def cambiar_estado_inmueble(request, id):
         'fechas_ocupadas_json': fechas_ocupadas,
     })
 
-from django.db.models import Avg
+import pandas as pd
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import io
+import base64
+from django.utils import timezone
+from django.db.models import F
+from reservas.models import SolicitudReserva as Reserva
+from .models import Inmueble
 
 def estadisticas_inmuebles(request):
-    orden = request.GET.get('orden')
-    inmuebles = Inmueble.objects.filter(activo=True).annotate(promedio=Avg('calificaciones__puntaje'))
+    # ... (importaciones y obtención de datos igual que antes) ...
 
-    if orden == 'calificacion_desc':
-        inmuebles = sorted(inmuebles, key=lambda x: x.promedio if x.promedio else 0, reverse=True)
-    elif orden == 'metros_asc':
-        inmuebles = inmuebles.order_by('metros_cuadrados')
+    # Filtro de fechas
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+    reservas = SolicitudReserva.objects.filter(estado='confirmada')
+
+    if fecha_inicio:
+        reservas = reservas.filter(fecha_inicio__gte=fecha_inicio)
+    if fecha_fin:
+        reservas = reservas.filter(fecha_fin__lte=fecha_fin)
+    
+    print("reservas:", reservas)
+
+    # Cargar datos a pandas
+    df = pd.DataFrame(list(
+        reservas.values(
+            'inmueble__provincia',
+            'inmueble__tipo',
+            'monto_total'
+        )
+    ))
+
+    print("DataFrame inicial:", df)
+
+    # Si no hay datos, pasar None a los gráficos
+    if df.empty:
+        print("DataFrame vacío, no se generarán gráficos.")
+        context = {
+            'grafico_ingresos_provincia': None,
+            'grafico_ingresos_tipo': None,
+            'grafico_reservas_provincia': None,
+            'grafico_reservas_tipo': None,
+            'fecha_inicio': fecha_inicio or '',
+            'fecha_fin': fecha_fin or '',
+        }
+        return render(request, 'inmueble/menu_estadisticas.html', context)
+
+    # Convertir monto_total a numérico
+    df['monto_total'] = pd.to_numeric(df['monto_total'], errors='coerce').fillna(0)
+
+    # Ingresos por provincia
+    ingresos_provincia = df.groupby('inmueble__provincia')['monto_total'].sum()
+    # Ingresos por tipo
+    ingresos_tipo = df.groupby('inmueble__tipo')['monto_total'].sum()
+    # Cantidad de reservas por provincia
+    reservas_provincia = df.groupby('inmueble__provincia').size()
+    # Cantidad de reservas por tipo
+    reservas_tipo = df.groupby('inmueble__tipo').size()
+
+    def plot_pie_to_base64(serie, title, is_monto=False):
+        if serie.empty:
+            return None
+        plt.figure(figsize=(6, 4))
+        total = serie.sum()
+        def make_autopct(values):
+            def my_autopct(pct):
+                val = int(round(pct * total / 100.0))
+                if is_monto:
+                    return '{:.1f}%\n${:,}'.format(pct, val)
+                else:
+                    return '{:.1f}%\n{}'.format(pct, val)
+            return my_autopct
+        plt.pie(
+            serie,
+            labels=serie.index,
+            autopct=make_autopct(serie.values),
+            startangle=140
+        )
+        plt.title(title)
+        plt.tight_layout()
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png')
+        plt.close()
+        buf.seek(0)
+        return base64.b64encode(buf.read()).decode('utf-8')
 
     context = {
-        'inmuebles': inmuebles,
-        'orden': orden,
-    }
-
+    'grafico_ingresos_provincia': plot_pie_to_base64(ingresos_provincia, 'Ingresos por Provincia', is_monto=True),
+    'grafico_ingresos_tipo': plot_pie_to_base64(ingresos_tipo, 'Ingresos por Tipo de Inmueble', is_monto=True),
+    'grafico_reservas_provincia': plot_pie_to_base64(reservas_provincia, 'Reservas por Provincia', is_monto=False),
+    'grafico_reservas_tipo': plot_pie_to_base64(reservas_tipo, 'Reservas por Tipo de Inmueble', is_monto=False),
+    'fecha_inicio': fecha_inicio or '',
+    'fecha_fin': fecha_fin or '',
+}
     return render(request, 'inmueble/menu_estadisticas.html', context)

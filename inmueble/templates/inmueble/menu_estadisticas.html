@@ -1,49 +1,22 @@
 {% extends 'base.html' %}
-
+{% load custom_filters %}
 {% block content %}
-<h1 style="margin-top: 4rem;">Estadísticas de Inmuebles</h1>
+    <form method="get" style="margin-bottom:2em;">
+        <label>Desde: <input type="date" name="fecha_inicio" value="{{ fecha_inicio }}"></label>
+        <label>Hasta: <input type="date" name="fecha_fin" value="{{ fecha_fin }}"></label>
+        <button type="submit">Filtrar</button>
+    </form>
 
-<form method="get">
-    <label for="orden">Ordenar por:</label>
-    <select name="orden" id="orden">
-        <option value="">-- Seleccionar --</option>
-        <option value="calificacion_desc" {% if orden and 'calificacion_desc' in orden %}selected{% endif %}>
-            Calificación (Mayor
-            a menor)</option>
-        <option value="metros_asc" {% if orden and 'metros_asc' in orden %}selected{% endif %}>Metros cuadrados (Menor a
-            mayor)
-        </option>
-
-    </select>
-    <button type="submit">Aplicar Filtros</button>
-    <a href="{% url 'estadisticas' %}" class="btn btn-secondary">Limpiar Filtros</a>
-</form>
-
-
-
-<hr>
-
-{% if inmuebles %}
-{% for inmueble in inmuebles %}
-<div class="inmueble-item" style="display: flex; margin-bottom: 2rem;">
-    <div class="inmueble-info" style="flex: 1;">
-        <h3>{{ inmueble.titulo }}</h3>
-        <p><strong>Tipo:</strong> {{ inmueble.tipo }}</p>
-        <p><strong>Ciudad:</strong> {{ inmueble.ciudad }}</p>
-        <p><strong>Metros cuadrados:</strong> {{ inmueble.metros_cuadrados }}</p>
-        <p><strong>Promedio de Calificación:</strong> {{ inmueble.promedio_calificacion }} estrellas</p>
-        <p><strong>Precio diario:</strong> ${{ inmueble.precio_diario }}</p>
-        <p><strong>Estado:</strong> {{ inmueble.estado }}</p>
-    </div>
-
-    {% if inmueble.foto %}
-    <div class="inmueble-image" style="flex: 0 0 40%;">
-        <img src="{{ inmueble.foto.url }}" alt="Foto de {{ inmueble.titulo }}" style="width: 100%;">
-    </div>
-    {% endif %}
-</div>
-{% endfor %}
+{% if grafico_ingresos_provincia %}
+    <h3>Ingresos por Provincia</h3>
+    <img src="data:image/png;base64,{{ grafico_ingresos_provincia }}" alt="Ingresos por Provincia">
+    <h3>Ingresos por Tipo de Inmueble</h3>
+    <img src="data:image/png;base64,{{ grafico_ingresos_tipo }}" alt="Ingresos por Tipo">
+    <h3>Cantidad de Reservas por Provincia</h3>
+    <img src="data:image/png;base64,{{ grafico_reservas_provincia }}" alt="Reservas por Provincia">
+    <h3>Cantidad de Reservas por Tipo de Inmueble</h3>
+    <img src="data:image/png;base64,{{ grafico_reservas_tipo }}" alt="Reservas por Tipo">
 {% else %}
-<p><em>No hay inmuebles para mostrar con los filtros aplicados.</em></p>
+    <p>No hay datos para el rango seleccionado.</p>
 {% endif %}
 {% endblock %}

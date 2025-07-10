@@ -1,0 +1,44 @@
+<style>
+    .btn-pagar, .btn-eliminar {
+        min-width: 150px; /* Puedes ajustar el valor según prefieras */
+        text-align: center;
+    }
+    .btn-pagar {
+        background-color: #28a745;    
+        color: white;
+        padding: 0.5em 1em;
+        border: none;
+        border-radius: 0.25em;
+        text-decoration: none;
+        font-weight: bold;
+        transition: background-color 0.2s ease;
+        margin-bottom: 1em; 
+        margin-top: 0.15cm;          
+        margin-right: 1em;
+        display: inline-block;
+    }
+    .btn-eliminar {
+        background-color: #b40a0a;    
+        color: white;
+        padding: 0.5em 1em;
+        border: none;
+        border-radius: 0.25em;
+        text-decoration: none;
+        font-weight: bold;
+        transition: background-color 0.2s ease;
+        margin-bottom: 1em; 
+        margin-top: 0.15cm;          
+        display: inline-block;
+    }
+</style>
+
+<p style="font-size: 1.4em;">
+    Si cancelás esta reserva con {{ dias_anticipacion }} días de anticipación
+    se te reintegrará ${{ porcentaje_reintegro }} por las políticas de cancelación del inmueble. ¿Estás seguro que querés cancelarla?
+</p>
+
+<form method="post" style="margin-top:2em;">
+    {% csrf_token %}
+    <button type="submit" class="btn-pagar">Confirmar</button>
+    <a href="{% url 'ver_solicitudes_pendientes' inquilino_id %}" class="btn-eliminar">Cancelar</a>
+</form>

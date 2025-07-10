@@ -23,6 +23,9 @@ class AltaInmueble(forms.ModelForm):
     class Meta:
         model = Inmueble
         exclude = ['fecha_inicio_inactividad', 'fecha_fin_inactividad','activo', 'estado']
+        labels = { 'devolucion_7dias_o_mas': 'Devolucion mayor a 7 dias',
+                  'devolucion_7_a_2dias': 'Devolucion entre 7 y 2  dias',
+                  'devolucion_2_a_0dias': 'Devolucion menor a 2 dias'}
 
 class EditarInmueble(forms.ModelForm):
     foto = forms.ImageField(required=True, 
@@ -31,7 +34,9 @@ class EditarInmueble(forms.ModelForm):
     class Meta:
         model = Inmueble
         exclude = ['calle','numero','ciudad','provincia','pais','tipo','titulo','fecha_inicio_inactividad','fecha_fin_inactividad','activo', 'estado']
-    
+        labels = { 'devolucion_7dias_o_mas': 'Devolucion mayor a 7 dias',
+                  'devolucion_7_a_2dias': 'Devolucion entre 7 y 2  dias',
+                  'devolucion_2_a_0dias': 'Devolucion menor a 2 dias'}
 
 from datetime import date
 
