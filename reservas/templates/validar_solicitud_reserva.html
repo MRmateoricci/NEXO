@@ -10,7 +10,7 @@
     gap: 2rem;
     margin-top: 2rem;
 }
-.form-container, .pendiente-pago-container {
+.form-container, .pendiente-pago-container, .iniciadas-container, .finalizadas-container, .canceladas-container {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -66,6 +66,54 @@ li {
                 {% endif %}
             {% empty %}
                 <li>No hay solicitudes pendientes de pago.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="iniciadas-container">
+        <h2>Confirmadas</h2>
+        <ul>
+            {% for solicitud in solicitudes %}
+                {% if solicitud.estado == "confirmada" %}
+                <li>
+                    {{ solicitud.inquilino }} - {{ solicitud.inmueble }}<br>
+                    {{ solicitud.fecha_inicio }} a {{ solicitud.fecha_fin }}
+                </li>
+                {% endif %}
+            {% empty %}
+                <li>No hay solicitudes confrimadas.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="finalizadas-container">
+        <h2>Iniciadas</h2>
+        <ul>
+            {% for solicitud in solicitudes %}
+                {% if solicitud.estado == "iniciada" %}
+                <li>
+                    {{ solicitud.inquilino }} - {{ solicitud.inmueble }}<br>
+                    {{ solicitud.fecha_inicio }} a {{ solicitud.fecha_fin }}
+                </li>
+                {% endif %}
+            {% empty %}
+                <li>No hay solicitudes iniciadas.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+        <div class="canceladas-container">
+        <h2>Finalizadas</h2>
+        <ul>
+            {% for solicitud in solicitudes %}
+                {% if solicitud.estado == "finalizada" %}
+                <li>
+                    {{ solicitud.inquilino }} - {{ solicitud.inmueble }}<br>
+                    {{ solicitud.fecha_inicio }} a {{ solicitud.fecha_fin }}
+                </li>
+                {% endif %}
+            {% empty %}
+                <li>No hay solicitudes finalizadas.</li>
             {% endfor %}
         </ul>
     </div>

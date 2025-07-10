@@ -25,6 +25,8 @@ class SolicitudReserva(models.Model):
     ('pendiente de pago', 'Pendiente de Pago'),
     ('pagada', 'Pagada'),
     ('confirmada', 'Confirmada'),
+    ('iniciada', 'Iniciada'),
+    ('finalizada', 'Finalizada'),
     ('cancelada', 'Cancelada'),
     ]
     inquilino = models.ForeignKey('usuarios.Usuario', on_delete=models.CASCADE)
