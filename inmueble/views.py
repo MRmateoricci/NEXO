@@ -263,75 +263,101 @@ def cambiar_estado_inmueble(request, id):
         'fechas_ocupadas_json': fechas_ocupadas,
     })
 
-from django.shortcuts import render
-from django.db.models import Sum, Count, ExpressionWrapper, F, FloatField, DurationField
+import pandas as pd
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import io
+import base64
 from django.utils import timezone
+from django.db.models import F
 from reservas.models import SolicitudReserva as Reserva
 from .models import Inmueble
 
 def estadisticas_inmuebles(request):
-    fecha_inicio = request.GET.get('fecha_inicio', (timezone.now() - timezone.timedelta(days=30)).strftime('%Y-%m-%d'))
-    fecha_fin = request.GET.get('fecha_fin', timezone.now().strftime('%Y-%m-%d'))
+    # ... (importaciones y obtención de datos igual que antes) ...
 
-    try:
-        fecha_inicio_obj = timezone.datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
-        fecha_fin_obj = timezone.datetime.strptime(fecha_fin, '%Y-%m-%d').date()
-        if fecha_fin_obj < fecha_inicio_obj:
-            fecha_inicio_obj, fecha_fin_obj = fecha_fin_obj, fecha_inicio_obj
-            fecha_inicio, fecha_fin = fecha_fin, fecha_inicio
-    except:
-        fecha_inicio_obj = (timezone.now() - timezone.timedelta(days=30)).date()
-        fecha_fin_obj = timezone.now().date()
-        fecha_inicio = fecha_inicio_obj.strftime('%Y-%m-%d')
-        fecha_fin = fecha_fin_obj.strftime('%Y-%m-%d')
+    # Filtro de fechas
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+    reservas = SolicitudReserva.objects.filter(estado='confirmada')
 
-    reservas = Reserva.objects.filter(
-        fecha_inicio__lte=fecha_fin_obj,
-        fecha_fin__gte=fecha_inicio_obj,
-        estado='confirmada'
-    ).annotate(
-        dias=ExpressionWrapper(
-            F('fecha_fin') - F('fecha_inicio'),
-            output_field=DurationField()
+    if fecha_inicio:
+        reservas = reservas.filter(fecha_inicio__gte=fecha_inicio)
+    if fecha_fin:
+        reservas = reservas.filter(fecha_fin__lte=fecha_fin)
+    
+    print("reservas:", reservas)
+
+    # Cargar datos a pandas
+    df = pd.DataFrame(list(
+        reservas.values(
+            'inmueble__provincia',
+            'inmueble__tipo',
+            'monto_total'
         )
-    ).annotate(
-        dias_float=ExpressionWrapper(
-            F('dias') / 86400.0,
-            output_field=FloatField()
-        ),
-        precio_final=ExpressionWrapper(
-            F('inmueble__precio_diario') * F('dias_float'),
-            output_field=FloatField()
+    ))
+
+    print("DataFrame inicial:", df)
+
+    # Si no hay datos, pasar None a los gráficos
+    if df.empty:
+        print("DataFrame vacío, no se generarán gráficos.")
+        context = {
+            'grafico_ingresos_provincia': None,
+            'grafico_ingresos_tipo': None,
+            'grafico_reservas_provincia': None,
+            'grafico_reservas_tipo': None,
+            'fecha_inicio': fecha_inicio or '',
+            'fecha_fin': fecha_fin or '',
+        }
+        return render(request, 'inmueble/menu_estadisticas.html', context)
+
+    # Convertir monto_total a numérico
+    df['monto_total'] = pd.to_numeric(df['monto_total'], errors='coerce').fillna(0)
+
+    # Ingresos por provincia
+    ingresos_provincia = df.groupby('inmueble__provincia')['monto_total'].sum()
+    # Ingresos por tipo
+    ingresos_tipo = df.groupby('inmueble__tipo')['monto_total'].sum()
+    # Cantidad de reservas por provincia
+    reservas_provincia = df.groupby('inmueble__provincia').size()
+    # Cantidad de reservas por tipo
+    reservas_tipo = df.groupby('inmueble__tipo').size()
+
+    def plot_pie_to_base64(serie, title, is_monto=False):
+        if serie.empty:
+            return None
+        plt.figure(figsize=(6, 4))
+        total = serie.sum()
+        def make_autopct(values):
+            def my_autopct(pct):
+                val = int(round(pct * total / 100.0))
+                if is_monto:
+                    return '{:.1f}%\n${:,}'.format(pct, val)
+                else:
+                    return '{:.1f}%\n{}'.format(pct, val)
+            return my_autopct
+        plt.pie(
+            serie,
+            labels=serie.index,
+            autopct=make_autopct(serie.values),
+            startangle=140
         )
-    )
-
-    ingresos_provincia = reservas.values('inmueble__provincia').annotate(total=Sum('precio_final'))
-    reservas_provincia = reservas.values('inmueble__provincia').annotate(count=Count('id'))
-
-    tipo_display_map = dict(Inmueble._meta.get_field('tipo').choices)
-    ingresos_tipo_raw = reservas.values('inmueble__tipo').annotate(total=Sum('precio_final'))
-    reservas_tipo_raw = reservas.values('inmueble__tipo').annotate(count=Count('id'))
-
-    ingresos_tipo = [
-        {'tipo': tipo_display_map.get(item['inmueble__tipo'], 'Desconocido'), 'total': item['total']}
-        for item in ingresos_tipo_raw
-    ]
-    reservas_tipo = [
-        {'tipo': tipo_display_map.get(item['inmueble__tipo'], 'Desconocido'), 'count': item['count']}
-        for item in reservas_tipo_raw
-    ]
+        plt.title(title)
+        plt.tight_layout()
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png')
+        plt.close()
+        buf.seek(0)
+        return base64.b64encode(buf.read()).decode('utf-8')
 
     context = {
-        'fecha_inicio': fecha_inicio,
-        'fecha_fin': fecha_fin,
-        'ingresos_provincia': list(ingresos_provincia),
-        'reservas_provincia': list(reservas_provincia),
-        'ingresos_tipo': ingresos_tipo,
-        'reservas_tipo': reservas_tipo,
-        'total_ingresos_provincia': sum(item['total'] or 0 for item in ingresos_provincia),
-        'total_ingresos_tipo': sum(item['total'] or 0 for item in ingresos_tipo),
-        'total_reservas_provincia': sum(item['count'] or 0 for item in reservas_provincia),
-        'total_reservas_tipo': sum(item['count'] or 0 for item in reservas_tipo),
-    }
-
+    'grafico_ingresos_provincia': plot_pie_to_base64(ingresos_provincia, 'Ingresos por Provincia', is_monto=True),
+    'grafico_ingresos_tipo': plot_pie_to_base64(ingresos_tipo, 'Ingresos por Tipo de Inmueble', is_monto=True),
+    'grafico_reservas_provincia': plot_pie_to_base64(reservas_provincia, 'Reservas por Provincia', is_monto=False),
+    'grafico_reservas_tipo': plot_pie_to_base64(reservas_tipo, 'Reservas por Tipo de Inmueble', is_monto=False),
+    'fecha_inicio': fecha_inicio or '',
+    'fecha_fin': fecha_fin or '',
+}
     return render(request, 'inmueble/menu_estadisticas.html', context)
