@@ -57,7 +57,7 @@
                   ★
                 {% endfor %}
               </div>
-               {% if request.user.rol == "empleado" %}
+               {% if request.user.rol == "empleado" or reseña.inquilino == request.user %}
                 <form action="{% url 'eliminar_reseña' reseña.id %}" method="post" style="margin: 0;">
                   {% csrf_token %}
                   <button type="submit" style="background-color: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">

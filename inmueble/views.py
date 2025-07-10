@@ -12,7 +12,7 @@ from .models import Reseña
 def eliminar_reseña(request, reseña_id):
     if request.method == 'POST':
         reseña = get_object_or_404(Reseña, id=reseña_id)
-        if request.user.rol == "empleado":
+        if request.user.rol == "empleado" or reseña.inquilino == request.user:
             inmueble_id = reseña.inmueble.id
             reseña.delete()
             messages.success(request, "Reseña eliminada correctamente.")
