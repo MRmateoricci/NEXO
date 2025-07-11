@@ -111,6 +111,7 @@ LOGIN_URL = '/login/'
 LANGUAGE_CODE = 'es-ES'
 
 TIME_ZONE = 'UTC'
+USE_TZ = True
 
 USE_I18N = True
 
@@ -134,8 +135,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Looking to send emails in production? Check out our Email API/SMTP product!
 EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
-EMAIL_HOST_USER = '31e2346cb94afc'
-EMAIL_HOST_PASSWORD = '361ad853d1f666'
+EMAIL_HOST_USER = 'c54cb603a0a32a'
+EMAIL_HOST_PASSWORD = '07662b3490dd66'
 EMAIL_PORT = '2525'
 
 MEDIA_URL = '/media/'

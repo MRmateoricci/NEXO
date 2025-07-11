@@ -102,7 +102,7 @@ li {
         </ul>
     </div>
 
-        <div class="canceladas-container">
+    <div class="canceladas-container">
         <h2>Finalizadas</h2>
         <ul>
             {% for solicitud in solicitudes %}
@@ -114,6 +114,24 @@ li {
                 {% endif %}
             {% empty %}
                 <li>No hay solicitudes finalizadas.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="solicitudes-col">
+        <h2>Cancelada</h2>
+        <ul>
+            {% for solicitud in solicitudes %}
+            {% if solicitud.estado == "cancelada" %}
+            <li>
+                <strong>Inmueble:</strong> {{ solicitud.inmueble }}<br>
+                <strong>Fecha inicio:</strong> {{ solicitud.fecha_inicio }}<br>
+                <strong>Fecha fin:</strong> {{ solicitud.fecha_fin }}<br>
+                <strong>Estado:</strong> {{ solicitud.estado|capfirst }}
+            </li>
+            {% endif %}
+            {% empty %}
+            <li>No tienes solicitudes de reserva canceladas.</li>
             {% endfor %}
         </ul>
     </div>

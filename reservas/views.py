@@ -147,11 +147,13 @@ def validarSolicitudReservaView(request):
     solicitudesConfirmadas = SolicitudReserva.objects.filter(estado='confirmada')
     solicitudesIniciadas = SolicitudReserva.objects.filter(estado='iniciada')
     solicitudesFinalizadas = SolicitudReserva.objects.filter(estado='finalizada')
-    solicitudes = list(solicitudesPendientes) + list(SolicitudesPendientesDePago) + list(solicitudesConfirmadas) + list(solicitudesIniciadas) + list(solicitudesFinalizadas)
+    solicitudesCanceladas = SolicitudReserva.objects.filter(estado='cancelada')
+    solicitudes = list(solicitudesPendientes) + list(SolicitudesPendientesDePago) + list(solicitudesConfirmadas) + list(solicitudesIniciadas) + list(solicitudesFinalizadas) + list(solicitudesCanceladas)
     
     if request.method == 'POST':
         solicitud_id = request.POST.get('solicitud_id')
         accion = request.POST.get('accion')
+        print(f"accion recibida: {accion}")
         try:
             solicitud = SolicitudReserva.objects.get(id=solicitud_id)
             if accion == 'aceptar':
@@ -350,19 +352,18 @@ def confirmar_cancelacion_reserva_view(request, reserva_id):
 
 from datetime import timedelta
 from django.utils import timezone
+from django.db.models.functions import TruncDate
 
 def caducar_solicitudes_pendientes():
-    ahora = timezone.now()
-    limite = ahora - timedelta(days=1)
-    
-    solicitudes_caducadas = SolicitudReserva.objects.filter(
-        estado='pendiente de pago',
-        fecha_solicitud=limite
-    )
-    
-    for solicitud in solicitudes_caducadas:
-        solicitud.estado = 'cancelada'
-        solicitud.save()
+    hace_un_dia = timezone.now().date() - timedelta(days=2)
+    print(hace_un_dia)
+    print(timezone.now().date())
+    canceladas = SolicitudReserva.objects.filter(
+        estado__in=['pendiente', 'pendiente de pago'],
+        fecha_solicitud__lte=hace_un_dia  # 👈 hace más de 1 día calendario
+    ).update(estado='cancelada')
+
+    print(f"Se cancelaron {canceladas} solicitudes.")
 
 def actualizar_estado_reservas():
     hoy = timezone.now().date()
