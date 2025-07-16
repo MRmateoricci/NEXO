@@ -79,9 +79,9 @@
                 <strong>Fecha inicio:</strong> {{ solicitud.fecha_inicio }}<br>
                 <strong>Fecha fin:</strong> {{ solicitud.fecha_fin }}<br>
                 <strong>Estado:</strong> {{ solicitud.estado|capfirst }}
-                <button type="button" class="btn-eliminar" onclick="eliminarSolicitud('{{ solicitud.id }}')">
+                <a href="{% url 'confirmar_cancelacion_pendiente' solicitud.id %}" class="btn-eliminar">
                     Cancelar solicitud de reserva
-                </button>            
+                </a>          
             </li>
             {% endif %}
             {% empty %}
@@ -99,10 +99,10 @@
                 <strong>Fecha inicio:</strong> {{ solicitud.fecha_inicio }}<br>
                 <strong>Fecha fin:</strong> {{ solicitud.fecha_fin }}<br>
                 <strong>Estado:</strong> {{ solicitud.estado|capfirst }}<br>
-                <a href="{% url 'pagar_reserva' solicitud.id %}" class="btn-pagar" >Pagar ahora</a>
-                <button type="button" class="btn-eliminar" onclick="eliminarSolicitud('{{ solicitud.id }}')">
+                <a href="{% url 'pagar_reserva' solicitud.id %}" class="btn-pagar" >Pagar ahora</a> 
+                <a href="{% url 'confirmar_cancelacion_pendiente' solicitud.id %}" class="btn-eliminar">
                     Cancelar solicitud de reserva
-                </button>  
+                </a>
             </li>
             {% endif %}
             {% empty %}
