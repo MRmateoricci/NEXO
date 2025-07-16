@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Cancelar reserva</h2>
+
+<p><strong>Reserva ID:</strong> {{ reserva.id }}</p>
+<p><strong>Inmueble:</strong> {{ reserva.inmueble }}</p>
+<p><strong>Inquilino:</strong> {{ reserva.inquilino.get_full_name }} ({{ reserva.inquilino.email }})</p>
+<p><strong>Monto total:</strong> ${{ reserva.monto_total }}</p>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-danger">Confirmar cancelación</button>
+</form>
+
+{% endblock %}

@@ -29,3 +29,10 @@ class InquilinoNuevoForm(forms.Form):
 
 class BuscarUsuarioForm(forms.Form):
     busqueda = forms.CharField(required=False, label="Buscar por nombre o DNI") 
+
+class CancelarReservaForm(forms.Form):
+    motivo = forms.CharField(
+        label="Motivo de cancelación",
+        widget=forms.Textarea(attrs={'rows': 4, 'placeholder': 'Ingresá el motivo...'}),
+        required=True
+    )

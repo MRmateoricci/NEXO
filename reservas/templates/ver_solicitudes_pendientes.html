@@ -35,36 +35,37 @@
         background: #fff;
         border-radius: 8px;
         padding: 1em;
-        padding-bottom: 3em;     
+        padding-bottom: 3em;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         font-size: 1em;
     }
 
     .btn-pagar {
-    background-color: #28a745;    
-    color: white;
-    padding: 0.5em 1em;
-    border: none;
-    border-radius: 0.25em;
-    text-decoration: none;
-    font-weight: bold;
-    transition: background-color 0.2s ease;
-    display: inline-block;                 
-    margin-bottom: 1em; 
-    margin-top: 0.40cm;          
+        background-color: #28a745;
+        color: white;
+        padding: 0.5em 1em;
+        border: none;
+        border-radius: 0.25em;
+        text-decoration: none;
+        font-weight: bold;
+        transition: background-color 0.2s ease;
+        display: inline-block;
+        margin-bottom: 1em;
+        margin-top: 0.40cm;
     }
+
     .btn-eliminar {
-    background-color: #b40a0a;    
-    color: white;
-    padding: 0.5em 1em;
-    border: none;
-    border-radius: 0.25em;
-    text-decoration: none;
-    font-weight: bold;
-    transition: background-color 0.2s ease;
-    display: inline-block;                 
-    margin-bottom: 0.50em; 
-    margin-top: 0.1cm;          
+        background-color: #b40a0a;
+        color: white;
+        padding: 0.5em 1em;
+        border: none;
+        border-radius: 0.25em;
+        text-decoration: none;
+        font-weight: bold;
+        transition: background-color 0.2s ease;
+        display: inline-block;
+        margin-bottom: 0.50em;
+        margin-top: 0.1cm;
     }
 </style>
 
@@ -81,7 +82,7 @@
                 <strong>Estado:</strong> {{ solicitud.estado|capfirst }}
                 <button type="button" class="btn-eliminar" onclick="eliminarSolicitud('{{ solicitud.id }}')">
                     Cancelar solicitud de reserva
-                </button>            
+                </button>
             </li>
             {% endif %}
             {% empty %}
@@ -99,10 +100,10 @@
                 <strong>Fecha inicio:</strong> {{ solicitud.fecha_inicio }}<br>
                 <strong>Fecha fin:</strong> {{ solicitud.fecha_fin }}<br>
                 <strong>Estado:</strong> {{ solicitud.estado|capfirst }}<br>
-                <a href="{% url 'pagar_reserva' solicitud.id %}" class="btn-pagar" >Pagar ahora</a>
+                <a href="{% url 'pagar_reserva' solicitud.id %}" class="btn-pagar">Pagar ahora</a>
                 <button type="button" class="btn-eliminar" onclick="eliminarSolicitud('{{ solicitud.id }}')">
                     Cancelar solicitud de reserva
-                </button>  
+                </button>
             </li>
             {% endif %}
             {% empty %}
@@ -121,7 +122,7 @@
                 <strong>Fecha fin:</strong> {{ solicitud.fecha_fin }}<br>
                 <strong>Estado:</strong> {{ solicitud.estado|capfirst }}
                 {% if solicitud.fecha_inicio > hoy %}
-                    <a href="{% url 'confirmar_cancelacion' solicitud.id %}" class="btn-eliminar">Cancelar solicitud de reserva</a>
+                <a href="{% url 'confirmar_cancelacion' solicitud.id %}" class="btn-eliminar">Cancelar reserva</a>
                 {% endif %}
             </li>
             {% endif %}

@@ -378,3 +378,44 @@ def actualizar_estado_reservas():
             if reserva.estado != 'finalizada':
                 reserva.estado = 'finalizada'
                 reserva.save()
+
+
+def cancelar_reserva_empleado(request, reserva_id):
+    reserva = get_object_or_404(SolicitudReserva, id=reserva_id)
+
+    if reserva.estado != 'confirmada':
+        messages.error(request, "Solo podés cancelar reservas confirmadas.")
+        return redirect('ver_reservas_confirmadas_empleado')
+
+    if request.method == 'POST':
+        form = forms.CancelarReservaForm(request.POST)
+        if form.is_valid():
+            motivo = form.cleaned_data['motivo']
+            reserva.estado = 'cancelada'
+            reserva.motivo_cancelacion = motivo
+            reserva.save()
+
+            # Enviar correo al inquilino
+            send_mail(
+                subject="Tu reserva fue cancelada",
+                message=(
+                    f"Hola {reserva.inquilino.first_name},\n\n"
+                    f"Tu reserva del {reserva.fecha_inicio} al {reserva.fecha_fin} fue cancelada por el siguiente motivo:\n\n"
+                    f"\"{motivo}\"\n\n"
+                    f"Se te devolverá el 100% del monto abonado. Disculpá las molestias.\n\n"
+                    f"-- El equipo de NEXO"
+                ),
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[reserva.inquilino.email],
+                fail_silently=False
+            )
+
+            messages.success(request, "La reserva fue cancelada correctamente y el inquilino fue notificado.")
+            return redirect('validar_solicitud_reserva')
+    else:
+        form = forms.CancelarReservaForm()
+
+    return render(request, 'cancelar_reserva_empleado.html', {
+        'reserva': reserva,
+        'form': form
+    })

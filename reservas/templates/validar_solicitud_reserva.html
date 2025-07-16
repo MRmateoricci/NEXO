@@ -4,32 +4,57 @@
 
 <h1 style="text-align: center;">Validar Solicitudes de Reserva</h1>
 <style>
-.columns-container {
-    display: flex;
-    justify-content: center;
-    gap: 2rem;
-    margin-top: 2rem;
-}
-.form-container, .pendiente-pago-container, .iniciadas-container, .finalizadas-container, .canceladas-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-ul {
-    list-style: none;
-    padding: 0;
-    width: 100%;
-    max-width: 500px;
-}
-li {
-    margin-bottom: 1em;
-    font-size: 1.2em;
-    background: #f5f5f5;
-    border-radius: 8px;
-    padding: 1em;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
+    .columns-container {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .form-container,
+    .pendiente-pago-container,
+    .iniciadas-container,
+    .finalizadas-container,
+    .canceladas-container,
+    .solicitudes-col {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 300px;
+    }
+
+    ul {
+        list-style: none;
+        padding: 0;
+        width: 100%;
+        max-width: 500px;
+    }
+
+    li {
+        margin-bottom: 1em;
+        font-size: 1.2em;
+        background: #f5f5f5;
+        border-radius: 8px;
+        padding: 1em;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .btn-cancelar {
+        margin-top: 0.5em;
+        background-color: #c82333;
+        color: white;
+        padding: 0.3em 0.6em;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9em;
+    }
+
+    .btn-cancelar:hover {
+        background-color: #a71d2a;
+    }
 </style>
 
 <div class="columns-container">
@@ -37,35 +62,36 @@ li {
         <h2>Pendientes de Aceptar/Rechazar</h2>
         <ul>
             {% for solicitud in solicitudes %}
-                {% if solicitud.estado == "pendiente" %}
-                <li>
-                    {{ solicitud.inquilino }} - {{ solicitud.inmueble }}<br>
-                    {{ solicitud.fecha_inicio }} a {{ solicitud.fecha_fin }}
-                    <form method="post" style="display:inline;">
-                        {% csrf_token %}
-                        <input type="hidden" name="solicitud_id" value="{{ solicitud.id }}">
-                        <button type="submit" name="accion" value="aceptar">Aceptar</button>
-                        <button type="submit" name="accion" value="rechazar">Rechazar</button>
-                    </form>
-                </li>
-                {% endif %}
+            {% if solicitud.estado == "pendiente" %}
+            <li>
+                {{ solicitud.inquilino }} - {{ solicitud.inmueble }}<br>
+                {{ solicitud.fecha_inicio }} a {{ solicitud.fecha_fin }}
+                <form method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="solicitud_id" value="{{ solicitud.id }}">
+                    <button type="submit" name="accion" value="aceptar">Aceptar</button>
+                    <button type="submit" name="accion" value="rechazar">Rechazar</button>
+                </form>
+            </li>
+            {% endif %}
             {% empty %}
-                <li>No hay solicitudes pendientes.</li>
+            <li>No hay solicitudes pendientes.</li>
             {% endfor %}
         </ul>
     </div>
+
     <div class="pendiente-pago-container">
         <h2>Pendientes de Pago</h2>
         <ul>
             {% for solicitud in solicitudes %}
-                {% if solicitud.estado == "pendiente de pago" %}
-                <li>
-                    {{ solicitud.inquilino }} - {{ solicitud.inmueble }}<br>
-                    {{ solicitud.fecha_inicio }} a {{ solicitud.fecha_fin }}
-                </li>
-                {% endif %}
+            {% if solicitud.estado == "pendiente de pago" %}
+            <li>
+                {{ solicitud.inquilino }} - {{ solicitud.inmueble }}<br>
+                {{ solicitud.fecha_inicio }} a {{ solicitud.fecha_fin }}
+            </li>
+            {% endif %}
             {% empty %}
-                <li>No hay solicitudes pendientes de pago.</li>
+            <li>No hay solicitudes pendientes de pago.</li>
             {% endfor %}
         </ul>
     </div>
@@ -74,14 +100,15 @@ li {
         <h2>Confirmadas</h2>
         <ul>
             {% for solicitud in solicitudes %}
-                {% if solicitud.estado == "confirmada" %}
-                <li>
-                    {{ solicitud.inquilino }} - {{ solicitud.inmueble }}<br>
-                    {{ solicitud.fecha_inicio }} a {{ solicitud.fecha_fin }}
-                </li>
-                {% endif %}
+            {% if solicitud.estado == "confirmada" %}
+            <li>
+                {{ solicitud.inquilino }} - {{ solicitud.inmueble }}<br>
+                {{ solicitud.fecha_inicio }} a {{ solicitud.fecha_fin }}<br>
+                <a href="{% url 'cancelar_reserva_empleado' solicitud.id %}" class="btn-cancelar">Cancelar Reserva</a>
+            </li>
+            {% endif %}
             {% empty %}
-                <li>No hay solicitudes confrimadas.</li>
+            <li>No hay solicitudes confirmadas.</li>
             {% endfor %}
         </ul>
     </div>
@@ -90,14 +117,14 @@ li {
         <h2>Iniciadas</h2>
         <ul>
             {% for solicitud in solicitudes %}
-                {% if solicitud.estado == "iniciada" %}
-                <li>
-                    {{ solicitud.inquilino }} - {{ solicitud.inmueble }}<br>
-                    {{ solicitud.fecha_inicio }} a {{ solicitud.fecha_fin }}
-                </li>
-                {% endif %}
+            {% if solicitud.estado == "iniciada" %}
+            <li>
+                {{ solicitud.inquilino }} - {{ solicitud.inmueble }}<br>
+                {{ solicitud.fecha_inicio }} a {{ solicitud.fecha_fin }}
+            </li>
+            {% endif %}
             {% empty %}
-                <li>No hay solicitudes iniciadas.</li>
+            <li>No hay solicitudes iniciadas.</li>
             {% endfor %}
         </ul>
     </div>
@@ -106,20 +133,20 @@ li {
         <h2>Finalizadas</h2>
         <ul>
             {% for solicitud in solicitudes %}
-                {% if solicitud.estado == "finalizada" %}
-                <li>
-                    {{ solicitud.inquilino }} - {{ solicitud.inmueble }}<br>
-                    {{ solicitud.fecha_inicio }} a {{ solicitud.fecha_fin }}
-                </li>
-                {% endif %}
+            {% if solicitud.estado == "finalizada" %}
+            <li>
+                {{ solicitud.inquilino }} - {{ solicitud.inmueble }}<br>
+                {{ solicitud.fecha_inicio }} a {{ solicitud.fecha_fin }}
+            </li>
+            {% endif %}
             {% empty %}
-                <li>No hay solicitudes finalizadas.</li>
+            <li>No hay solicitudes finalizadas.</li>
             {% endfor %}
         </ul>
     </div>
 
     <div class="solicitudes-col">
-        <h2>Cancelada</h2>
+        <h2>Canceladas</h2>
         <ul>
             {% for solicitud in solicitudes %}
             {% if solicitud.estado == "cancelada" %}
@@ -127,7 +154,8 @@ li {
                 <strong>Inmueble:</strong> {{ solicitud.inmueble }}<br>
                 <strong>Fecha inicio:</strong> {{ solicitud.fecha_inicio }}<br>
                 <strong>Fecha fin:</strong> {{ solicitud.fecha_fin }}<br>
-                <strong>Estado:</strong> {{ solicitud.estado|capfirst }}
+                <strong>Estado:</strong> {{ solicitud.estado|capfirst }}<br>
+                <strong>Motivo:</strong> {{ solicitud.motivo_cancelacion }}
             </li>
             {% endif %}
             {% empty %}
@@ -136,7 +164,5 @@ li {
         </ul>
     </div>
 </div>
-
-
 
 {% endblock %}
