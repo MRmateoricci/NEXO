@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Confirmar cancelación</h2>
+
+<p>¿Estás seguro de que deseas cancelar la solicitud de reserva para:</p>
+<ul>
+    <li><strong>Inmueble:</strong> {{ solicitud.inmueble }}</li>
+    <li><strong>Fecha inicio:</strong> {{ solicitud.fecha_inicio }}</li>
+    <li><strong>Fecha fin:</strong> {{ solicitud.fecha_fin }}</li>
+</ul>
+
+<form method="POST">
+    {% csrf_token %}
+    <button type="submit" class="btn-confirmar">Sí, cancelar solicitud</button>
+    <a href="{% url 'ver_solicitudes_pendientes' user.id %}" class="btn-cancelar">No, volver atrás</a>
+</form>
+{% endblock %}

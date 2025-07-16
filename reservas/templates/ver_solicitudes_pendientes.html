@@ -80,9 +80,9 @@
                 <strong>Fecha inicio:</strong> {{ solicitud.fecha_inicio }}<br>
                 <strong>Fecha fin:</strong> {{ solicitud.fecha_fin }}<br>
                 <strong>Estado:</strong> {{ solicitud.estado|capfirst }}
-                <button type="button" class="btn-eliminar" onclick="eliminarSolicitud('{{ solicitud.id }}')">
+                <a href="{% url 'confirmar_cancelacion_pendiente' solicitud.id %}" class="btn-eliminar">
                     Cancelar solicitud de reserva
-                </button>
+                    </button>
             </li>
             {% endif %}
             {% empty %}
@@ -100,10 +100,16 @@
                 <strong>Fecha inicio:</strong> {{ solicitud.fecha_inicio }}<br>
                 <strong>Fecha fin:</strong> {{ solicitud.fecha_fin }}<br>
                 <strong>Estado:</strong> {{ solicitud.estado|capfirst }}<br>
-                <a href="{% url 'pagar_reserva' solicitud.id %}" class="btn-pagar">Pagar ahora</a>
-                <button type="button" class="btn-eliminar" onclick="eliminarSolicitud('{{ solicitud.id }}')">
-                    Cancelar solicitud de reserva
-                </button>
+                <<<<<<< HEAD <a href="{% url 'pagar_reserva' solicitud.id %}" class="btn-pagar">Pagar ahora</a>
+                    <button type="button" class="btn-eliminar" onclick="eliminarSolicitud('{{ solicitud.id }}')">
+                        Cancelar solicitud de reserva
+                    </button>
+                    =======
+                    <a href="{% url 'pagar_reserva' solicitud.id %}" class="btn-pagar">Pagar ahora</a>
+                    <a href="{% url 'confirmar_cancelacion_pendiente' solicitud.id %}" class="btn-eliminar">
+                        Cancelar solicitud de reserva
+                    </a>
+                    >>>>>>> a6f8b34dff12217e774dff24328dbfa340e4d674
             </li>
             {% endif %}
             {% empty %}

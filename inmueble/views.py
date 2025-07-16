@@ -129,13 +129,12 @@ from reservas.models import SolicitudReserva  # Asumiendo que tu modelo de reser
 from .forms import ReseñaForm
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
-
 def ver_detalle_inmueble(request, inmueble_id):
     inmueble = get_object_or_404(Inmueble, pk=inmueble_id)
     puede_reseñar = SolicitudReserva.objects.filter(
         inquilino_id=request.user.id,
         inmueble_id=inmueble.id,
-        estado='confirmada'
+        estado='finalizada'
     ).exists()
 
     if request.method == 'POST' and puede_reseñar:
@@ -280,9 +279,10 @@ import matplotlib.pyplot as plt
 import io
 import base64
 from django.utils import timezone
-from django.db.models import F
+from django.db.models import F, Q
 from reservas.models import SolicitudReserva as Reserva
 from .models import Inmueble
+
 
 def estadisticas_inmuebles(request):
     # ... (importaciones y obtención de datos igual que antes) ...
@@ -290,8 +290,9 @@ def estadisticas_inmuebles(request):
     # Filtro de fechas
     fecha_inicio = request.GET.get('fecha_inicio')
     fecha_fin = request.GET.get('fecha_fin')
-    reservas = SolicitudReserva.objects.filter(estado='confirmada')
-
+    reservas = SolicitudReserva.objects.filter(
+        estado__in=['confirmada', 'iniciada', 'finalizada']
+    )
     if fecha_inicio:
         reservas = reservas.filter(fecha_inicio__gte=fecha_inicio)
     if fecha_fin:

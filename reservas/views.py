@@ -350,6 +350,20 @@ def confirmar_cancelacion_reserva_view(request, reserva_id):
         'inquilino_id': reserva.inquilino.id,
     })
 
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import SolicitudReserva
+
+def confirmar_cancelacion_pendiente(request, solicitud_id):
+    solicitud = get_object_or_404(SolicitudReserva, id=solicitud_id)
+
+    if request.method == 'POST':
+        # Aquí se cancela la solicitud
+        solicitud.estado = 'cancelada'
+        solicitud.save()
+        return redirect('ver_solicitudes_pendientes', inquilino_id=solicitud.inquilino.id)  # Cambia por la vista donde se listan las solicitudes
+
+    return render(request, 'confirmar_cancelacion_pendiente.html', {'solicitud': solicitud})
+
 from datetime import timedelta
 from django.utils import timezone
 from django.db.models.functions import TruncDate
