@@ -7,9 +7,13 @@
     .columns-container {
         display: flex;
         justify-content: center;
-        gap: 2rem;
+        align-items: flex-start;
+        flex-wrap: nowrap;
+        /* importante para que no se apilen */
+        overflow-x: auto;
+        /* por si hay muchas columnas */
+        gap: 1rem;
         margin-top: 2rem;
-        flex-wrap: wrap;
     }
 
     .form-container,
@@ -18,11 +22,14 @@
     .finalizadas-container,
     .canceladas-container,
     .solicitudes-col {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        min-width: 300px;
+        width: 250px;
+        min-width: 250px;
+        flex-shrink: 0;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        text-align: center;
     }
 
     ul {
