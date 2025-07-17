@@ -24,6 +24,7 @@ urlpatterns = [
     path('cancelar_pendiente/<int:solicitud_id>/', views.confirmar_cancelacion_pendiente, name='confirmar_cancelacion_pendiente'),
     path('reserva/pagar/<int:solicitud_id>/', views.pagar_reserva_view, name='pagar_reserva'),
     path('reserva/<int:reserva_id>/cancelar/', views.cancelar_reserva_empleado, name='cancelar_reserva_empleado'),
+    path('reserva/<int:reserva_id>/inquilinos/', views.agregar_inquilinos_view, name='agregar_inquilinos'),
 
 
 ]

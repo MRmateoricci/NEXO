@@ -29,6 +29,52 @@ def es_empleado(usuario):
 def ReservasView(request):
     return HttpResponse('pepe')
 
+def agregar_inquilinos_view(request, reserva_id):
+    reserva = get_object_or_404(SolicitudReserva, id=reserva_id)
+    usuario_principal = request.user
+    # Procesar inquilinos existentes
+    if request.method == 'POST':
+        inquilinos_existentes_ids = request.POST.getlist('inquilinos_existentes', [])
+        for usuario_id in inquilinos_existentes_ids:
+            usuario = get_object_or_404(Usuario, id=usuario_id)
+            inquilino, _ = Inquilino.objects.get_or_create(
+                usuario=usuario,
+                defaults={
+                    'nombre': usuario.get_full_name(),
+                    'dni': 'N/A',
+                    'edad': 0,
+                    'creado_por': usuario_principal
+                }
+            )
+            reserva.inquilinos.add(inquilino)
+
+        # Procesar inquilinos nuevos
+        inquilinos_nuevos_json = request.POST.get('inquilinos_nuevos')
+        if inquilinos_nuevos_json:
+            try:
+                inquilinos_nuevos = json.loads(inquilinos_nuevos_json)
+                if not isinstance(inquilinos_nuevos, list):
+                    inquilinos_nuevos = [inquilinos_nuevos]
+            except json.JSONDecodeError:
+                inquilinos_nuevos = []
+
+            for data in inquilinos_nuevos:
+                inquilino = Inquilino.objects.create(
+                    nombre=data.get('nombre', ''),
+                    dni=data.get('dni', ''),
+                    edad=int(data.get('edad', 0)),
+                    creado_por=usuario_principal
+                )
+                reserva.inquilinos.add(inquilino)
+        # Redirigir a la página de pago
+        return redirect('pagar_reserva', solicitud_id=reserva.id)
+    return render(request, 'agregar_inquilinos.html', {
+        'reserva': reserva,
+        'dni_inquilino': request.user.dni,
+        'min_dias_reserva': reserva.inmueble.minimo_dias_reserva,
+        'max_dias_reserva': reserva.inmueble.maximo_dias_reserva,
+    })
+
 def crearReservaView(request, inmueble_id):
     inmueble = get_object_or_404(Inmueble, id=inmueble_id)
     usuario_principal = request.user

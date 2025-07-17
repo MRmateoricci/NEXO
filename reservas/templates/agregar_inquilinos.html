@@ -1,0 +1,245 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Crear Solicitud de Reserva{% endblock %}
+
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<style>
+    .form-section {
+        margin-bottom: 25px;
+        padding: 20px;
+        background: white;
+        border-radius: 5px;
+    }
+    .form-field {
+        margin-bottom: 15px;
+    }
+
+    .form-field label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 600;
+        color: #495057;
+    }
+
+    .form-field input,
+    .form-field select,
+    .form-field textarea {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+    .btn {
+        padding: 8px 15px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .btn:hover {
+        background: #0069d9;
+    }
+
+    #inquilinos-list {
+        margin: 15px 0;
+        border: 1px dashed #dee2e6;
+        padding: 15px;
+        border-radius: 5px;
+        background: #f8f9fa;
+    }
+
+    .inquilino-item {
+        background: #e1f0ff;
+        padding: 8px 12px;
+        margin: 8px 0;
+        border-radius: 4px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .inquilino-item button {
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+        font-size: 12px;
+    }
+
+    .errorlist {
+        color: #dc3545;
+        font-size: 13px;
+        margin-top: 5px;
+    }
+</style>
+    <form method="POST" id="reserva-form">
+        {% csrf_token %}
+        <div class="form-section">
+            <h3 style="margin-top: 0; color: #343a40;">Agregar Inquilinos</h3>
+
+            <!-- Opción 1: Buscar usuario registrado -->
+            <div class="form-field">
+                <label>Buscar usuario registrado:</label>
+                <select id="buscar-usuario" class="js-example-basic-single" style="width: 100%">
+                    <option value=""></option>
+                </select>
+                <button type="button" id="agregar-usuario" class="btn" style="margin-top: 10px;">Agregar
+                    Usuario</button>
+            </div>
+
+            <!-- Opción 2: Registrar nuevo inquilino -->
+            <div class="form-field">
+                <label>Registrar nuevo inquilino:</label>
+                <input type="text" id="nombre-inquilino" placeholder="Nombre completo" class="form-control">
+                <input type="text" id="dni-inquilino" placeholder="DNI" class="form-control" style="margin-top: 8px;">
+                <input type="number" id="edad-inquilino" placeholder="Edad" class="form-control"
+                    style="margin-top: 8px;">
+                <button type="button" id="agregar-nuevo-inquilino" class="btn" style="margin-top: 10px;">Agregar
+                    Inquilino</button>
+            </div>
+
+            <!-- Lista de inquilinos agregados -->
+            <div class="form-field">
+                <label>Inquilinos agregados:</label>
+                <div id="inquilinos-list"></div>
+                <div id="inquilino-error" style="color: #dc3545; margin-top: 8px;"></div>
+                <div id="inquilino-success" style="color: #28a745; margin-top: 8px;"></div>
+            </div>
+        </div>
+        <button type="submit" class="btn" style="background: #28a745; width: 100%; padding: 10px;">ir a pagar reserva</button>
+    </form>
+    <script>
+        $(document).ready(function() {
+            const dniInquilino = "{{dni_inquilino}}"
+            let inquilinos = [];
+            window.inquilinos = inquilinos;
+            window.actualizarListaInquilinos = actualizarListaInquilinos;
+
+            // Configuración de Select2 para búsqueda de usuarios
+            $('#buscar-usuario').select2({
+                placeholder: "Buscar por nombre o email",
+                minimumInputLength: 2,
+                ajax: {
+                    url: '{% url "buscar_usuarios" %}',
+                    dataType: 'json',
+                    delay: 300,
+                    data: function (params) {
+                        return { q: params.term };
+                    },
+                    processResults: function (data) {
+                        return { results: data };
+                    }
+                }
+            });
+
+            // Agregar usuario registrado
+            $('#agregar-usuario').click(function () {
+                const usuario = $('#buscar-usuario').select2('data')[0];
+                if (usuario) {
+                    const yaExiste = inquilinos.some(inq =>
+                        (inq.tipo === 'existente' && inq.id == usuario.id) ||
+                        (inq.tipo === 'nuevo' && inq.dni === usuario.dni)
+                    );
+                    if (yaExiste) {
+                        a$('#inquilino-error').text('No puede agregar dos inquilinos con el mismo DNI.');
+                        setTimeout(function() { $('#inquilino-error').text(''); }, 5000);
+                        return;
+                    }
+                    inquilinos.push({
+                        tipo: 'existente',
+                        id: usuario.id,
+                        nombre: usuario.text.split(' (')[0], // Extrae solo el nombre
+                        dni: 'N/A'
+                    });
+                    actualizarListaInquilinos();
+                    $('#buscar-usuario').val(null).trigger('change');
+                }
+            });
+
+            $('#agregar-nuevo-inquilino').click(function () {
+                const nombre = $('#nombre-inquilino').val().trim();
+                const dni = $('#dni-inquilino').val().trim();
+                const edad = $('#edad-inquilino').val();
+
+                if (nombre && dni && edad) {
+                    if (dni === dniInquilino) {
+                        $('#inquilino-error').text('No puede agregar a un inquilino con su mismo DNI.');
+                        setTimeout(function() { $('#inquilino-error').text(''); }, 5000);
+                        return;
+                    }
+                    const yaExiste = inquilinos.some(inq => inq.dni === dni);
+                    if (yaExiste) {
+                        $('#inquilino-error').text('No puede agregar dos inquilinos con el mismo DNI.');
+                        setTimeout(function() { $('#inquilino-error').text(''); }, 5000);
+                        return;
+                    }
+                    inquilinos.push({
+                        tipo: 'nuevo',
+                        nombre: nombre,
+                        dni: dni,
+                        edad: edad
+                    });
+                    actualizarListaInquilinos();
+                    // Limpiar campos
+                    $('#nombre-inquilino, #dni-inquilino, #edad-inquilino').val('');
+                } else {
+                    alert('Por favor complete todos los campos del inquilino');
+                }
+            });
+            // Función para actualizar la lista visual
+            function actualizarListaInquilinos() {
+                const lista = $('#inquilinos-list');
+                lista.empty();
+
+                // Limpiar inputs ocultos previos
+                $('[name^="inquilinos_"]').remove();
+
+                inquilinos.forEach((inq, index) => {
+                    // Mostrar en lista visual
+                    lista.append(`
+                        <div class="inquilino-item">
+                            ${inq.nombre} (DNI: ${inq.dni}${inq.tipo === 'nuevo' ? ', Edad: ' + inq.edad : ''})
+                            <button type="button" onclick="eliminarInquilino(${index})">×</button>
+                        </div>
+                    `);
+
+                    // Agregar campos ocultos al formulario
+                    if (inq.tipo === 'existente') {
+                        $('#reserva-form').append(
+                            `<input type="hidden" name="inquilinos_existentes" value="${inq.id}">`
+                        );
+                    } else {
+                        $('#reserva-form').append(
+                            `<input type="hidden" name="inquilinos_nuevos" value='${JSON.stringify(inq)}'>`
+                        );
+                    }
+                });
+            }
+
+            function eliminarInquilino(index) {
+                // Accede al array global (que está en el scope de jQuery ready)
+                // Llama a la función de actualización que también está en ese scope
+                // Por eso, debes hacer que actualizarListaInquilinos sea global también:
+                if (window.inquilinos && window.actualizarListaInquilinos) {
+                    window.inquilinos.splice(index, 1);
+                    window.actualizarListaInquilinos();
+                    $('#inquilino-success').text('Inquilino eliminado con éxito');
+                    setTimeout(function() { $('#inquilino-success').text(''); }, 5000);
+                }
+            }
+        });
+    </script>
+{% endblock %}

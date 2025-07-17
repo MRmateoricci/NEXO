@@ -107,7 +107,7 @@
                 <strong>Fecha inicio:</strong> {{ solicitud.fecha_inicio }}<br>
                 <strong>Fecha fin:</strong> {{ solicitud.fecha_fin }}<br>
                 <strong>Estado:</strong> {{ solicitud.estado|capfirst }}<br>
-                <a href="{% url 'pagar_reserva' solicitud.id %}" class="btn-pagar">Pagar ahora</a>
+                <a href="{% url 'agregar_inquilinos' solicitud.id %}" class="btn-pagar">Agregar inquilinos y pagar</a>
                 <a href="{% url 'confirmar_cancelacion_pendiente' solicitud.id %}" class="btn-eliminar">
                     Cancelar solicitud de reserva
                 </a>
